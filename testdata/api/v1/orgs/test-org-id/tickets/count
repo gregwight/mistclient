@@ -1,0 +1,27 @@
+{
+    "limit": 1000,
+    "distinct": "status",
+    "total": 5,
+    "results": [
+        {
+            "status": "closed",
+            "count": 24
+        },
+        {
+            "status": "open",
+            "count": 12
+        },
+        {
+            "status": "solved",
+            "count": 15
+        },
+        {
+            "status": "pending",
+            "count": 10
+        },
+        {
+            "status": "hold",
+            "count": 3
+        }
+    ]
+}

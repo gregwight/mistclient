@@ -1,0 +1,11 @@
+[
+    {
+        "id": "4ac1dcf4-9d8b-7211-65c4-057819f0862b",
+        "name": "Mist Office",
+        "timezone": "America/Los_Angeles",
+        "country_code": "US",
+        "latlng": { "lat": 37.295833, "lng": -122.032946 },
+        "sitegroup_ids": [ "581328b6-e382-f54e-c9dc-999983183a34", "f57096b9-0c2f-4df6-c77b-ae6ae87a3d43" ],
+        "address": "1601 S. Deanza Blvd., Cupertino, CA, 95014"
+    }
+]

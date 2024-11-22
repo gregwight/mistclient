@@ -1,0 +1,21 @@
+{
+    "results": [
+        {
+            "type": "switch_restarted",
+            "count": 2
+        },
+        {
+            "type": "device_down",
+            "count": 1
+        },
+        {
+            "type": "device_restarted",
+            "count": 1
+        }    
+    ],
+    "start": 1625477727.0,
+    "end": 1625566540.9141023,
+    "limit": 10,
+    "distinct": "group",
+    "total": 1
+}
