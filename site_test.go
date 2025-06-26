@@ -2,6 +2,7 @@ package mistclient
 
 import (
 	"testing"
+	"time"
 )
 
 func TestGetSiteDevices(t *testing.T) {
@@ -49,7 +50,34 @@ func TestGetSiteDeviceStats(t *testing.T) {
 		}
 		if ds.RadioStats[Band5].TxBytes != 50877568 {
 			t.Errorf("APIClient.GetSiteDeviceStats(%s)[0].RadioStat[Band5]: expected 50877568 TxBytes, got: %d", siteID, ds.RadioStats[Band5].TxBytes)
-			t.Errorf("Client.GetSiteDeviceStats(%s)[0].RadioStat[Band5]: expected 50877568 TxBytes, got: %d", siteID, ds.RadioStats[Band5].TxBytes)
+		}
+	}
+}
+
+func TestGetSiteClients(t *testing.T) {
+	s := testAPIServer(t)
+	defer s.Close()
+
+	c := NewAPIClient(&Config{BaseURL: s.URL, APIKey: "testAPIKey"})
+
+	siteID := "test-site-id"
+	clients, err := c.GetSiteClients(siteID)
+	if err != nil {
+		t.Errorf("APIClient.GetSiteClients(%s): Threw error: %s", siteID, err)
+	}
+	if len(clients) != 1 {
+		t.Errorf("APIClient.GetSiteDeviceStats(%s): expected 1 device, got: %d", siteID, len(clients))
+	} else {
+		client := clients[0]
+		if client.Mac != "5684dae9ac8b" {
+			t.Errorf("APIClient.GetSiteClients(%s)[0].Mac: expected 5684dae9ac8b, got: %s", siteID, client.Mac)
+		}
+		if client.Uptime != Seconds(time.Duration(3568)*time.Second) {
+			t.Errorf("APIClient.GetSiteClients(%s)[0].Uptime: expected 3568s, got: %d", siteID, client.Uptime)
+		}
+		if !client.Guest.Authorized {
+			t.Errorf("APIClient.GetSiteClients(%s)[0].Guest.Authorized: expected true, got: %t", siteID, client.Guest.Authorized)
+
 		}
 	}
 }

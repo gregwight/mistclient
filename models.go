@@ -117,3 +117,77 @@ type RadioStat struct {
 	UtilNonWiFi         int    `json:"util_non_wifi"`
 	UtilUndecodableWiFi int    `json:"util_undecodable_wifi"`
 }
+
+// Client represents an end-user device connected to the radio of a Device
+type Client struct {
+	Mac         string     `json:"mac"`
+	LastSeen    UnixTime   `json:"last_seen"`
+	Username    string     `json:"username"`
+	Hostname    string     `json:"hostname"`
+	OS          string     `json:"os"`
+	Manufacture string     `json:"manufacture"`
+	Family      string     `json:"family"`
+	Model       string     `json:"model"`
+	IP          netip.Addr `json:"ip"`
+	IP6         netip.Addr `json:"ip6"`
+	APMac       string     `json:"ap_mac"`
+	APID        string     `json:"ap_id"`
+	SSID        string     `json:"ssid"`
+	WLANID      string     `json:"wlan_id"`
+	PSKID       string     `json:"psk_id"`
+
+	Uptime     Seconds `json:"uptime"`
+	Idletime   Seconds `json:"idle_time"`
+	PowerSaing bool    `json:"power_saving"`
+	Band       string  `jsonn:"band"`
+	Proto      string  `json:"proto"`
+	KeyMgmt    string  `json:"key_mgmt"`
+	DualBand   bool    `json:"dual_band"`
+
+	Channel        int    `json:"channel"`
+	VLANID         string `json:"vlan_id"`
+	AirspaceIfname string `json:"airespace_ifname"`
+	RSSI           int    `json:"rssi"`
+	SNR            int    `json:"snr"`
+	TxRate         int    `json:"tx_rate"`
+	RxRate         int    `json:"rx_rate"`
+
+	TxBytes   int `json:"tx_bytes"`
+	TxBps     int `json:"tx_bps"`
+	TxPackets int `json:"tx_packets"`
+	TxRetries int `json:"tx_retries"`
+	RxBytes   int `json:"rx_bytes"`
+	RxBps     int `json:"rx_bps"`
+	RxPackets int `json:"rx_packets"`
+	RxRetries int `json:"rx_retries"`
+
+	MapID          string  `json:"map_id"`
+	X              float64 `json:"x"`
+	Y              float64 `json:"y"`
+	Xm             float64 `json:"x_m"`
+	Ym             float64 `json:"y_m"`
+	NumLocatingAPs int     `json:"num_locating_aps"`
+
+	IsGuest  bool     `json:"is_guest"`
+	Guest    Guest    `json:"guest"`
+	Airwatch Airwatch `json:"airwatch"`
+	TTL      int      `json:"_ttl"`
+}
+
+// Guest holds data relating to the `guest` status of a Client
+type Guest struct {
+	Authorized             bool     `json:"authorized"`
+	AuthorizedTime         UnixTime `json:"authorized_time"`
+	AuthorizedExpiringTime UnixTime `json:"authorized_expiring_time"`
+
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Company   string `json:"company"`
+	Field1    string `json:"field1"`
+	CrossSite bool   `json:"cross_site"`
+}
+
+// Airwatch holds information regarding the 'airwatch` status of a Client
+type Airwatch struct {
+	Authorized bool `json:"authorized"`
+}

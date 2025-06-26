@@ -47,3 +47,23 @@ func (c *APIClient) GetSiteDeviceStats(siteID string) ([]DeviceStat, error) {
 
 	return devices, nil
 }
+
+func (c *APIClient) GetSiteClients(siteID string) ([]Client, error) {
+	path := fmt.Sprintf("/api/v1/sites/%s/stats/clients", siteID)
+	resp, err := c.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, extractError(resp)
+	}
+
+	var clients []Client
+	if err := json.NewDecoder(resp.Body).Decode(&clients); err != nil {
+		return nil, err
+	}
+
+	return clients, nil
+}
