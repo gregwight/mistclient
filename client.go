@@ -31,20 +31,20 @@ type Config struct {
 	Timeout int
 }
 
-// Client represents the API client.
-type Client struct {
+// APIClient represents the API client.
+type APIClient struct {
 	config *Config
 	client *http.Client
 }
 
-// NewClient sets a default timeout value and returns an instance of the API client.
-func NewClient(config *Config) *Client {
+// NewAPIClient sets a default timeout value and returns an instance of the API client.
+func NewAPIClient(config *Config) *APIClient {
 	timeout := 10
 	if config.Timeout > 0 {
 		timeout = config.Timeout
 	}
 
-	return &Client{
+	return &APIClient{
 		config: config,
 		client: &http.Client{
 			Timeout: time.Duration(timeout) * time.Second,
@@ -55,7 +55,7 @@ func NewClient(config *Config) *Client {
 // doRequest performs that actual HTTP client request against the provided API endpoint.
 // It constructs the URL based on the client configuration and supplied path, sets an
 // authentication header based on the API key, and returns the response or any errors.
-func (c *Client) doRequest(method, path string, body interface{}) (*http.Response, error) {
+func (c *APIClient) doRequest(method, path string, body interface{}) (*http.Response, error) {
 	url := c.config.BaseURL + path
 
 	var reqBody io.Reader
@@ -94,7 +94,7 @@ func (c *Client) doRequest(method, path string, body interface{}) (*http.Respons
 }
 
 // extractError is a convenience method for decoding the response body and returning it as an error.
-// It is typically called when a returned HTTP status code does not match teh expected value.
+// It is typically called when a returned HTTP status code does not match the expected value.
 func extractError(r *http.Response) error {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -104,21 +104,21 @@ func extractError(r *http.Response) error {
 }
 
 // Get is a convenience function for performing HTTP GET requests using the API client.
-func (c *Client) Get(path string) (*http.Response, error) {
+func (c *APIClient) Get(path string) (*http.Response, error) {
 	return c.doRequest("GET", path, nil)
 }
 
 // Post is a convenience function for performing HTTP POST requests using the API client.
-func (c *Client) Post(path string, body interface{}) (*http.Response, error) {
+func (c *APIClient) Post(path string, body interface{}) (*http.Response, error) {
 	return c.doRequest("POST", path, body)
 }
 
 // Put is a convenience function for performing HTTP PUT requests using the API client.
-func (c *Client) Put(path string, body interface{}) (*http.Response, error) {
+func (c *APIClient) Put(path string, body interface{}) (*http.Response, error) {
 	return c.doRequest("PUT", path, body)
 }
 
 // Delete is a convenience function for performing HTTP DELETE requests using the API client.
-func (c *Client) Delete(path string) (*http.Response, error) {
+func (c *APIClient) Delete(path string) (*http.Response, error) {
 	return c.doRequest("DELETE", path, nil)
 }

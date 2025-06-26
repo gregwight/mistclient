@@ -7,7 +7,7 @@ import (
 )
 
 // GetSiteDevices fetches and returns a list of all devices configured at a site.
-func (c *Client) GetSiteDevices(siteID string) ([]Device, error) {
+func (c *APIClient) GetSiteDevices(siteID string) ([]Device, error) {
 	path := fmt.Sprintf("/api/v1/sites/%s/devices", siteID)
 	resp, err := c.Get(path)
 	if err != nil {
@@ -28,7 +28,7 @@ func (c *Client) GetSiteDevices(siteID string) ([]Device, error) {
 }
 
 // GetSiteDeviceStats fetches and returns a list of all devices configured at a site, supplemented with operational statistics.
-func (c *Client) GetSiteDeviceStats(siteID string) ([]DeviceStat, error) {
+func (c *APIClient) GetSiteDeviceStats(siteID string) ([]DeviceStat, error) {
 	path := fmt.Sprintf("/api/v1/sites/%s/stats/devices", siteID)
 	resp, err := c.Get(path)
 	if err != nil {
