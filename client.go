@@ -11,6 +11,7 @@
 // The client currently supports the following Site endpoints:
 //   - /api/v1/sites/:site_id/devices
 //   - /api/v1/sites/:site_id/stats/devices
+//   - /api/v1/sites/:site_id/stats/clients
 package mistclient
 
 import (
@@ -26,9 +27,9 @@ import (
 
 // Config represents the API access parameters.
 type Config struct {
-	BaseURL string
-	APIKey  string
-	Timeout int
+	BaseURL string `yaml:"base_url"`
+	APIKey  string `yaml:"api_key"`
+	Timeout int    `yaml:"timeout"`
 }
 
 // APIClient represents the API client.
