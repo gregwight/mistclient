@@ -2,6 +2,7 @@ package mistclient
 
 import (
 	"encoding/json"
+	"errors"
 	"net/netip"
 	"time"
 )
@@ -9,18 +10,39 @@ import (
 // Seconds represents a time in seconds
 type Seconds time.Duration
 
-func (d *Seconds) UnmarshalJSON(b []byte) error {
-	var seconds int64
+// MarshalJSON implements the [json.Marshaler] interface.
+func (s *Seconds) MarshalJSON() ([]byte, error) {
+	d := (*time.Duration)(s)
+	b, err := json.Marshal(d)
+	if err != nil {
+		return nil, errors.New("Seconds.MarshalJSON: " + err.Error())
+	}
+	return b, nil
+}
+
+func (s *Seconds) UnmarshalJSON(b []byte) error {
+	// The Mist API returns this value as a float for some unknown reason...
+	var seconds float64
 	if err := json.Unmarshal(b, &seconds); err != nil {
 		return err
 	}
-	*d = Seconds(time.Duration(seconds) * time.Second)
+	*s = Seconds(time.Duration(int(seconds)) * time.Second)
 	return nil
 }
 
 // UnixTime represents the number of seconds since the Eunix epoch
 type UnixTime struct {
 	time.Time
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (ut *UnixTime) MarshalJSON() ([]byte, error) {
+	if y := ut.Year(); y < 0 || y >= 10000 {
+		// RFC 3339 is clear that years are 4 digits exactly.
+		// See golang.org/issue/4556#c15 for more discussion.
+		return nil, errors.New("UnixTime.MarshalJSON: year outside of range [0,9999]")
+	}
+	return []byte(ut.Format(`"` + time.RFC3339 + `"`)), nil
 }
 
 func (ut *UnixTime) UnmarshalJSON(b []byte) error {
@@ -144,13 +166,13 @@ type Client struct {
 	KeyMgmt    string  `json:"key_mgmt,omitzero"`
 	DualBand   bool    `json:"dual_band,omitzero"`
 
-	Channel        int    `json:"channel,omitzero"`
-	VLANID         string `json:"vlan_id,omitzero"`
-	AirspaceIfname string `json:"airespace_ifname,omitzero"`
-	RSSI           int    `json:"rssi,omitzero"`
-	SNR            int    `json:"snr,omitzero"`
-	TxRate         int    `json:"tx_rate,omitzero"`
-	RxRate         int    `json:"rx_rate,omitzero"`
+	Channel        int     `json:"channel,omitzero"`
+	VLANID         string  `json:"vlan_id,omitzero"`
+	AirspaceIfname string  `json:"airespace_ifname,omitzero"`
+	RSSI           int     `json:"rssi,omitzero"`
+	SNR            int     `json:"snr,omitzero"`
+	TxRate         float64 `json:"tx_rate,omitzero"`
+	RxRate         float64 `json:"rx_rate,omitzero"`
 
 	TxBytes   int `json:"tx_bytes,omitzero"`
 	TxBps     int `json:"tx_bps,omitzero"`
