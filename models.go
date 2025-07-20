@@ -54,6 +54,36 @@ func (ut *UnixTime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Self represents the account associated with the authenticated API user
+type Self struct {
+	Email                string      `json:"email,omitempty"`
+	FirstName            string      `json:"first_name,omitempty"`
+	LastName             string      `json:"last_name,omitempty"`
+	Phone                string      `json:"phone,omitempty"`
+	SSO                  bool        `json:"via_sso,omitempty"`
+	PasswordLastModified UnixTime    `json:"password_modified_time,omitzero"`
+	Privileges           []Privilege `json:"privileges,omitempty"`
+	Tags                 []string    `json:"tags,omitempty"`
+}
+
+// Privilege represents the permissions of the authenticated API user
+type Privilege struct {
+	Scope        string   `json:"scope,omitempty"`
+	Name         string   `json:"name,omitempty"`
+	Role         string   `json:"role,omitempty"`
+	Views        []string `json:"views,omitempty"`
+	OrgID        string   `json:"org_id,omitempty"`
+	OrgName      string   `json:"org_name,omitempty"`
+	SiteID       string   `json:"site_id,omitempty"`
+	SiteName     string   `json:"site_name,omitempty"`
+	MSPID        string   `json:"msp_id,omitempty"`
+	MSPName      string   `json:"msp_name,omitempty"`
+	MSPURL       string   `json:"msp_url,omitempty"`
+	MSPLogoURL   string   `json:"msp_logo_url,omitempty"`
+	OrgGroupIDs  []string `json:"orggroup_ids,omitempty"`
+	SiteGroupIDs []string `json:"sitegroup_ids,omitempty"`
+}
+
 // Alarm represents an alarm created by an error condition
 type Alarm struct {
 	ID             string   `json:"id,omitzero"`

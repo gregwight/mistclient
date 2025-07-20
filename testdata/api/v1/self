@@ -1,0 +1,43 @@
+{
+    "email": "test@mistsys.com",
+    "first_name": "John",
+    "last_name": "Smith",
+    "phone": "14081112222",
+    "via_sso": false,
+    "password_modified_time": 1656353525,
+    "privileges": [
+        {
+            "scope": "org",
+            "org_id": "9ff00eec-24f0-44d7-bda4-6238c81376ee",
+            "name": "TestCompany",
+            "role": "write",
+            "views": ["location"],
+            "msp_id": "9520c63a-f7b3-670c-0944-727774d5a722",
+            "msp_name": "MSP",
+            "msp_url": "https://msp.example.com",
+            "msp_logo_url": "https://msp.example.com/logo/9520c63a-f7b3-670c-0944-727774d5a722.jpeg",
+            "orggroup_ids": ["9ff00eec-24f0-44d7-bda4-6238c81376ee"]
+        },
+        {
+            "scope": "site",
+            "site_id": "d96e3952-53e8-4266-959a-45acd55f5114",
+            "name": "Mist Office",
+            "role": "admin",
+            "org_id": "9ff00eec-24f0-44d7-bda4-6238c81376ee",
+            "org_name": "TestCompany",
+            "sitegroup_ids": ["581328b6-e382-f54e-c9dc-999983183a34"],
+            "msp_id": "9520c63a-f7b3-670c-0944-727774d5a722",
+            "msp_url": "https://msp.example.com",
+            "msp_logo_url": "https://msp.example.com/logo/9520c63a-f7b3-670c-0944-727774d5a722.jpeg"
+        },
+        {
+            "scope": "msp",
+            "msp_id": "9520c63a-f7b3-670c-0944-727774d5a722",
+            "name": "MSP",
+            "msp_url": "https://msp.example.com",
+            "msp_logo_url": "https://msp.example.com/logo/9520c63a-f7b3-670c-0944-727774d5a722.jpeg",
+            "role": "admin"
+        }
+    ],
+    "tags": [ "has_8021x", "mist" ]
+}
