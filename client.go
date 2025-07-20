@@ -38,8 +38,8 @@ type APIClient struct {
 	client *http.Client
 }
 
-// NewAPIClient sets a default timeout value and returns an instance of the API client.
-func NewAPIClient(config *Config) *APIClient {
+// New sets a default timeout value and returns an instance of the API client.
+func New(config *Config) *APIClient {
 	timeout := 10
 	if config.Timeout > 0 {
 		timeout = config.Timeout

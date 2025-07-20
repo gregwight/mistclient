@@ -13,7 +13,7 @@ func TestNewClient(t *testing.T) {
 	testURL := "https://test.url.com"
 	testKey := "xxKEYxx"
 
-	c := NewAPIClient(&Config{
+	c := New(&Config{
 		BaseURL: testURL,
 		APIKey:  testKey,
 	})

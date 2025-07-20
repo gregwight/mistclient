@@ -19,12 +19,12 @@ func (c *APIClient) GetOrgSites(orgID string) ([]Site, error) {
 		return nil, extractError(resp)
 	}
 
-	var users []Site
-	if err := json.NewDecoder(resp.Body).Decode(&users); err != nil {
+	var sites []Site
+	if err := json.NewDecoder(resp.Body).Decode(&sites); err != nil {
 		return nil, err
 	}
 
-	return users, nil
+	return sites, nil
 }
 
 // CountOrgTickets returns a map of counts of all tickets related to an organisation, keyed by their status.
