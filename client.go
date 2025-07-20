@@ -19,10 +19,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // Config represents the API access parameters.
@@ -36,17 +35,23 @@ type Config struct {
 type APIClient struct {
 	config *Config
 	client *http.Client
+	logger *slog.Logger
 }
 
 // New sets a default timeout value and returns an instance of the API client.
-func New(config *Config) *APIClient {
+func New(config *Config, logger *slog.Logger) *APIClient {
 	timeout := 10
 	if config.Timeout > 0 {
 		timeout = config.Timeout
 	}
 
+	if logger == nil {
+		logger = slog.Default()
+	}
+
 	return &APIClient{
 		config: config,
+		logger: logger.With("module", "mistclient"),
 		client: &http.Client{
 			Timeout: time.Duration(timeout) * time.Second,
 		},
@@ -76,17 +81,17 @@ func (c *APIClient) doRequest(method, path string, body interface{}) (*http.Resp
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.config.APIKey))
 	req.Header.Set("Content-Type", "application/json")
 
-	log.Debugf("Making %s request to %s", method, url)
+	c.logger.Debug("making API request", "method", method, "url", url)
 	resp, err := c.client.Do(req)
 	if err != nil {
-		log.Errorf("Request failed: %v", err)
+		c.logger.Error("request failed", "error", err)
 		return nil, err
 	}
-	log.Debugf("Received response with status code %d", resp.StatusCode)
+	c.logger.Debug("API response received", "status", resp.StatusCode)
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("Unable to read response body: %v", err)
+		c.logger.Debug("unable to read response body", "error", err)
 		return nil, err
 	}
 	resp.Body = io.NopCloser(bytes.NewBuffer(respBody))

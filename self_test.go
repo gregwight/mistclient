@@ -8,7 +8,7 @@ func TestGetSelf(t *testing.T) {
 	s := testAPIServer(t)
 	defer s.Close()
 
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"})
+	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
 
 	self, err := c.GetSelf()
 	if err != nil {

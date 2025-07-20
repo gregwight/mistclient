@@ -9,7 +9,7 @@ func TestGetSiteDevices(t *testing.T) {
 	s := testAPIServer(t)
 	defer s.Close()
 
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"})
+	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
 
 	siteID := "test-site-id"
 	devices, err := c.GetSiteDevices(siteID)
@@ -34,7 +34,7 @@ func TestGetSiteDeviceStats(t *testing.T) {
 	s := testAPIServer(t)
 	defer s.Close()
 
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"})
+	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
 
 	siteID := "test-site-id"
 	deviceStats, err := c.GetSiteDeviceStats(siteID)
@@ -58,7 +58,7 @@ func TestGetSiteClients(t *testing.T) {
 	s := testAPIServer(t)
 	defer s.Close()
 
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"})
+	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
 
 	siteID := "test-site-id"
 	clients, err := c.GetSiteClients(siteID)

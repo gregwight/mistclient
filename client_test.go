@@ -16,7 +16,7 @@ func TestNewClient(t *testing.T) {
 	c := New(&Config{
 		BaseURL: testURL,
 		APIKey:  testKey,
-	})
+	}, nil)
 	if c.config.BaseURL != testURL {
 		t.Errorf("NewClient: expected BaseURL: %s, got: %s", testURL, c.config.BaseURL)
 	}
