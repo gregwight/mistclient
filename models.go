@@ -109,7 +109,7 @@ type Device struct {
 	HwRev        string     `json:"hw_rev,omitempty"`
 	Mac          string     `json:"mac,omitempty"`
 	OrgID        string     `json:"org_id,omitempty"`
-	SiteID       string     `josn:"site_id,omitempty"`
+	SiteID       string     `json:"site_id,omitempty"`
 	ModifiedTime UnixTime   `json:"modified_time,omitzero"`
 	CreatedTime  UnixTime   `json:"created_time,omitzero"`
 }
@@ -120,7 +120,7 @@ type DeviceStat struct {
 
 	LastSeen   UnixTime     `json:"last_seen,omitzero"`
 	NumClients int          `json:"num_clients,omitempty"`
-	Version    string       `josn:"version,omitempty"`
+	Version    string       `json:"version,omitempty"`
 	Status     DeviceStatus `json:"status,omitempty"`
 	IP         netip.Addr   `json:"ip,omitempty"`
 	ExtIP      netip.Addr   `json:"ext_ip,omitempty"`
@@ -136,7 +136,7 @@ type DeviceStat struct {
 	MemUsedKB  int          `json:"mem_used_kb,omitempty"`
 	PowerSrc   string       `json:"power_src,omitempty"`
 
-	RadioStats map[Radio]RadioStat `json:"radio_stat,omitempty"`
+	RadioStats map[RadioConfig]RadioStat `json:"radio_stat,omitempty"`
 }
 
 // RadioStat holds operational statistics and data relating to the radio connectivity of a Device
@@ -181,7 +181,7 @@ type Client struct {
 	Uptime     Seconds `json:"uptime,omitempty"`
 	Idletime   Seconds `json:"idle_time,omitempty"`
 	PowerSaing bool    `json:"power_saving,omitempty"`
-	Band       string  `jsonn:"band,omitempty"`
+	Band       Radio   `json:"band,omitempty"`
 	Proto      string  `json:"proto,omitempty"`
 	KeyMgmt    string  `json:"key_mgmt,omitempty"`
 	DualBand   bool    `json:"dual_band,omitempty"`
@@ -232,4 +232,20 @@ type Guest struct {
 // Airwatch holds information regarding the 'airwatch` status of a Client
 type Airwatch struct {
 	Authorized bool `json:"authorized,omitempty"`
+}
+
+// OrgTicketCountResult is the response from the ticket count endpoint.
+type OrgTicketCountResult struct {
+	Results []struct {
+		Status string  `json:"status"`
+		Count  float64 `json:"count"`
+	} `json:"results"`
+}
+
+// OrgAlarmCountResult is the response from the alarm count endpoint.
+type OrgAlarmCountResult struct {
+	Results []struct {
+		Type  string  `json:"type"`
+		Count float64 `json:"count"`
+	} `json:"results"`
 }

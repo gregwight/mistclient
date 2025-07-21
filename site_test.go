@@ -48,8 +48,8 @@ func TestGetSiteDeviceStats(t *testing.T) {
 		if ds.Status != Connected {
 			t.Errorf("APIClient.GetSiteDeviceStats(%s)[0]: expected status 'connected', got: %s", siteID, ds.Status)
 		}
-		if ds.RadioStats[Band5].TxBytes != 50877568 {
-			t.Errorf("APIClient.GetSiteDeviceStats(%s)[0].RadioStat[Band5]: expected 50877568 TxBytes, got: %d", siteID, ds.RadioStats[Band5].TxBytes)
+		if ds.RadioStats[Band5Config].TxBytes != 50877568 {
+			t.Errorf("APIClient.GetSiteDeviceStats(%s)[0].RadioStat[Band5Config]: expected 50877568 TxBytes, got: %d", siteID, ds.RadioStats[Band5Config].TxBytes)
 		}
 	}
 }
@@ -66,7 +66,7 @@ func TestGetSiteClients(t *testing.T) {
 		t.Errorf("APIClient.GetSiteClients(%s): Threw error: %s", siteID, err)
 	}
 	if len(clients) != 1 {
-		t.Errorf("APIClient.GetSiteDeviceStats(%s): expected 1 device, got: %d", siteID, len(clients))
+		t.Errorf("APIClient.GetSiteClients(%s): expected 1 client, got: %d", siteID, len(clients))
 	} else {
 		client := clients[0]
 		if client.Mac != "5684dae9ac8b" {
@@ -77,7 +77,9 @@ func TestGetSiteClients(t *testing.T) {
 		}
 		if !client.Guest.Authorized {
 			t.Errorf("APIClient.GetSiteClients(%s)[0].Guest.Authorized: expected true, got: %t", siteID, client.Guest.Authorized)
-
+		}
+		if client.Band != Band24 {
+			t.Errorf("APIClient.GetSiteClients(%s)[0].Band: expected '5', got: %s", siteID, client.Band)
 		}
 	}
 }

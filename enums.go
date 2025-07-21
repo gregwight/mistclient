@@ -36,7 +36,7 @@ func TicketStatusFromString(status string) TicketStatus {
 	switch status {
 	case "open":
 		return Open
-	case "pendng":
+	case "pending":
 		return Pending
 	case "solved":
 		return Solved
@@ -151,11 +151,11 @@ const (
 func (r Radio) String() string {
 	switch r {
 	case Band6:
-		return "band_6"
+		return "6"
 	case Band5:
-		return "band_5"
+		return "5"
 	case Band24:
-		return "band_24"
+		return "2.4"
 	default:
 		return "unknown"
 	}
@@ -163,11 +163,11 @@ func (r Radio) String() string {
 
 func RadioFromString(r string) Radio {
 	switch r {
-	case "band_6":
+	case "6":
 		return Band6
-	case "band_5":
+	case "5":
 		return Band5
-	case "band_24":
+	case "24":
 		return Band24
 	default:
 		return 0
@@ -177,7 +177,7 @@ func RadioFromString(r string) Radio {
 func (r *Radio) unmarshal(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
-		return fmt.Errorf("JSON error: %+q", data)
+		return fmt.Errorf("failed to unmarshal radio band from %q: %w", string(data), err)
 	}
 	*r = RadioFromString(s)
 	return nil
@@ -189,4 +189,55 @@ func (r *Radio) UnmarshalText(b []byte) error {
 
 func (r *Radio) UnmarshalJSON(b []byte) error {
 	return r.unmarshal(b)
+}
+
+type RadioConfig int
+
+const (
+	Band6Config RadioConfig = iota + 1
+	Band5Config
+	Band24Config
+)
+
+func (rc RadioConfig) String() string {
+	switch rc {
+	case Band6Config:
+		return "band_6"
+	case Band5Config:
+		return "band_5"
+	case Band24Config:
+		return "band_24"
+	default:
+		return "unknown"
+	}
+}
+
+func RadioConfigFromString(r string) RadioConfig {
+	switch r {
+	case "band_6":
+		return Band6Config
+	case "band_5":
+		return Band5Config
+	case "band_24":
+		return Band24Config
+	default:
+		return 0
+	}
+}
+
+func (rc *RadioConfig) unmarshal(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("failed to unmarshal radio config band from %q: %w", string(data), err)
+	}
+	*rc = RadioConfigFromString(s)
+	return nil
+}
+
+func (rc *RadioConfig) UnmarshalText(b []byte) error {
+	return rc.unmarshal(b)
+}
+
+func (rc *RadioConfig) UnmarshalJSON(b []byte) error {
+	return rc.unmarshal(b)
 }

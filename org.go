@@ -40,15 +40,14 @@ func (c *APIClient) CountOrgTickets(orgID string) (map[TicketStatus]int, error) 
 		return nil, extractError(resp)
 	}
 
-	var result map[string]interface{}
+	var result OrgTicketCountResult
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
 
 	counts := make(map[TicketStatus]int)
-	for _, data := range result["results"].([]interface{}) {
-		data := data.(map[string]interface{})
-		counts[TicketStatusFromString(data["status"].(string))] = int(data["count"].(float64))
+	for _, data := range result.Results {
+		counts[TicketStatusFromString(data.Status)] = int(data.Count)
 	}
 	return counts, nil
 }
@@ -66,15 +65,14 @@ func (c *APIClient) CountOrgAlarms(orgID string) (map[string]int, error) {
 		return nil, extractError(resp)
 	}
 
-	var result map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	var OrgAlarmCountResult OrgAlarmCountResult
+	if err := json.NewDecoder(resp.Body).Decode(&OrgAlarmCountResult); err != nil {
 		return nil, err
 	}
 
 	counts := make(map[string]int)
-	for _, data := range result["results"].([]interface{}) {
-		data := data.(map[string]interface{})
-		counts[data["type"].(string)] = int(data["count"].(float64))
+	for _, data := range OrgAlarmCountResult.Results {
+		counts[data.Type] = int(data.Count)
 	}
 	return counts, nil
 }
