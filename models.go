@@ -233,19 +233,3 @@ type Guest struct {
 type Airwatch struct {
 	Authorized bool `json:"authorized,omitempty"`
 }
-
-// OrgTicketCountResult is the response from the ticket count endpoint.
-type OrgTicketCountResult struct {
-	Results []struct {
-		Status string  `json:"status"`
-		Count  float64 `json:"count"`
-	} `json:"results"`
-}
-
-// OrgAlarmCountResult is the response from the alarm count endpoint.
-type OrgAlarmCountResult struct {
-	Results []struct {
-		Type  string  `json:"type"`
-		Count float64 `json:"count"`
-	} `json:"results"`
-}

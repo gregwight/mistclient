@@ -40,7 +40,13 @@ func (c *APIClient) CountOrgTickets(orgID string) (map[TicketStatus]int, error) 
 		return nil, extractError(resp)
 	}
 
-	var result OrgTicketCountResult
+	result := struct {
+		Results []struct {
+			Status string  `json:"status"`
+			Count  float64 `json:"count"`
+		} `json:"results"`
+	}{}
+
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
@@ -65,13 +71,19 @@ func (c *APIClient) CountOrgAlarms(orgID string) (map[string]int, error) {
 		return nil, extractError(resp)
 	}
 
-	var OrgAlarmCountResult OrgAlarmCountResult
-	if err := json.NewDecoder(resp.Body).Decode(&OrgAlarmCountResult); err != nil {
+	result := struct {
+		Results []struct {
+			Type  string  `json:"type"`
+			Count float64 `json:"count"`
+		} `json:"results"`
+	}{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
 
 	counts := make(map[string]int)
-	for _, data := range OrgAlarmCountResult.Results {
+	for _, data := range result.Results {
 		counts[data.Type] = int(data.Count)
 	}
 	return counts, nil
