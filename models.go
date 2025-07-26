@@ -132,8 +132,6 @@ type DeviceStat struct {
 	RxBytes    int          `json:"rx_bytes,omitempty"`
 	TxPkts     int          `json:"tx_pkts,omitempty"`
 	RxPkts     int          `json:"rx_pkts,omitempty"`
-	CPUUtil    int          `json:"cpu_util,omitempty"`
-	MemUsedKB  int          `json:"mem_used_kb,omitempty"`
 	PowerSrc   string       `json:"power_src,omitempty"`
 
 	RadioStats map[RadioConfig]RadioStat `json:"radio_stat,omitempty"`
