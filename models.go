@@ -176,13 +176,13 @@ type Client struct {
 	WLANID      string     `json:"wlan_id,omitempty"`
 	PSKID       string     `json:"psk_id,omitempty"`
 
-	Uptime     Seconds `json:"uptime,omitempty"`
-	Idletime   Seconds `json:"idle_time,omitempty"`
-	PowerSaing bool    `json:"power_saving,omitempty"`
-	Band       Radio   `json:"band,omitempty"`
-	Proto      string  `json:"proto,omitempty"`
-	KeyMgmt    string  `json:"key_mgmt,omitempty"`
-	DualBand   bool    `json:"dual_band,omitempty"`
+	Uptime      Seconds `json:"uptime,omitempty"`
+	Idletime    Seconds `json:"idle_time,omitempty"`
+	PowerSaving bool    `json:"power_saving,omitempty"`
+	Band        Radio   `json:"band,omitempty"`
+	Proto       string  `json:"proto,omitempty"`
+	KeyMgmt     string  `json:"key_mgmt,omitempty"`
+	DualBand    bool    `json:"dual_band,omitempty"`
 
 	Channel        int     `json:"channel,omitempty"`
 	VLANID         string  `json:"vlan_id,omitempty"`
