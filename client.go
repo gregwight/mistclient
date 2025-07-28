@@ -26,9 +26,9 @@ import (
 
 // Config represents the API access parameters.
 type Config struct {
-	BaseURL string `yaml:"base_url"`
-	APIKey  string `yaml:"api_key"`
-	Timeout int    `yaml:"timeout"`
+	BaseURL string        `yaml:"base_url"`
+	APIKey  string        `yaml:"api_key"`
+	Timeout time.Duration `yaml:"timeout"`
 }
 
 // APIClient represents the API client.
@@ -38,11 +38,11 @@ type APIClient struct {
 	logger *slog.Logger
 }
 
-// New sets a default timeout value and returns an instance of the API client.
+// New returns an instance of the API client.
 func New(config *Config, logger *slog.Logger) *APIClient {
-	timeout := 10
-	if config.Timeout > 0 {
-		timeout = config.Timeout
+	timeout := config.Timeout
+	if timeout <= 0 {
+		timeout = 10 * time.Second
 	}
 
 	if logger == nil {
@@ -53,7 +53,7 @@ func New(config *Config, logger *slog.Logger) *APIClient {
 		config: config,
 		logger: logger.With("module", "mistclient"),
 		client: &http.Client{
-			Timeout: time.Duration(timeout) * time.Second,
+			Timeout: timeout,
 		},
 	}
 }
