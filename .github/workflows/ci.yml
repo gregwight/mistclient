@@ -2,9 +2,12 @@ name: Go CI
 
 on:
   push:
-    branches: [ main ]
+    branches-ignore:
+      - main
   pull_request:
-    branches: [ main ]
+    types: [closed]
+    branches:
+      - main
 
 jobs:
   vet_test:
@@ -17,8 +20,11 @@ jobs:
       with:
         go-version: '1.24'
 
-    - name: Vet
-      run: go vet ./...
+    - name: Run make target
+      run: make ci
 
-    - name: Test
-      run: go test -v -race ./...
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        version: v2.3.0
+        args: --disable errcheck
