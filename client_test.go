@@ -51,12 +51,12 @@ func testAPIServer(t *testing.T) *httptest.Server {
 			if os.IsNotExist(err) {
 				w.Header().Set("Content-Type", "text/html")
 				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte(fmt.Sprintf("Test API server: response data not found at: %s", respDataPath)))
+				fmt.Fprintf(w, "Test API server: response data not found at: %s", respDataPath)
 				return
 			}
 			w.Header().Set("Content-Type", "text/html")
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(fmt.Sprintf("Test API server: error reading response data: %s", err)))
+			fmt.Fprintf(w, "Test API server: error reading response data: %s", err)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
