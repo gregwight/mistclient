@@ -36,10 +36,11 @@ type UnixTime struct {
 }
 
 func (ut *UnixTime) UnmarshalJSON(b []byte) error {
-	var timestamp int64
-	if err := json.Unmarshal(b, &timestamp); err != nil {
+	var dirtyTimestamp float64
+	if err := json.Unmarshal(b, &dirtyTimestamp); err != nil {
 		return err
 	}
+	timestamp := int64(dirtyTimestamp)
 	ut.Time = time.Unix(timestamp, 0)
 	return nil
 }
