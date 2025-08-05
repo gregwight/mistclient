@@ -5,10 +5,7 @@ import (
 )
 
 func TestGetSelf(t *testing.T) {
-	s := testAPIServer(t)
-	defer s.Close()
-
-	c := newTestClient(t, s)
+	c := newTestClient(t)
 
 	self, err := c.GetSelf()
 	if err != nil {

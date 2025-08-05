@@ -70,8 +70,11 @@ func testAPIServer(t *testing.T) *httptest.Server {
 	}))
 }
 
-func newTestClient(t *testing.T, s *httptest.Server) *APIClient {
+func newTestClient(t *testing.T) *APIClient {
 	t.Helper()
+
+	s := testAPIServer(t)
+	t.Cleanup(s.Close)
 
 	baseURL, err := url.Parse(s.URL)
 	if err != nil {
