@@ -27,7 +27,7 @@ import (
 
 // Config represents the API access parameters.
 type Config struct {
-	BaseURL *url.URL      `yaml:"base_url"`
+	BaseURL string        `yaml:"base_url"`
 	APIKey  string        `yaml:"api_key"`
 	Timeout time.Duration `yaml:"timeout"`
 }
@@ -63,7 +63,7 @@ func New(config *Config, logger *slog.Logger) *APIClient {
 // It constructs the URL based on the client configuration and supplied path, sets an
 // authentication header based on the API key, and returns the response or any errors.
 func (c *APIClient) doRequest(method, path string, body interface{}) (*http.Response, error) {
-	url, err := url.Parse(fmt.Sprintf("%s%s", c.config.BaseURL.String(), path))
+	url, err := url.Parse(fmt.Sprintf("%s%s", c.config.BaseURL, path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse request URL: %w", err)
 	}
