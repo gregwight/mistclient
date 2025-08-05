@@ -8,8 +8,7 @@ import (
 
 // GetOrgSites returns a list of all sites configured within an organisation.
 func (c *APIClient) GetOrgSites(orgID string) ([]Site, error) {
-	path := fmt.Sprintf("/api/v1/orgs/%s/sites", orgID)
-	resp, err := c.Get(path)
+	resp, err := c.Get(c.baseURL.JoinPath(fmt.Sprintf("/api/v1/orgs/%s/sites", orgID)))
 	if err != nil {
 		return nil, err
 	}
@@ -29,8 +28,14 @@ func (c *APIClient) GetOrgSites(orgID string) ([]Site, error) {
 
 // CountOrgTickets returns a map of counts of all tickets related to an organisation, keyed by their status.
 func (c *APIClient) CountOrgTickets(orgID string) (map[TicketStatus]int, error) {
-	path := fmt.Sprintf("/api/v1/orgs/%s/tickets/count?distinct=status", orgID)
-	resp, err := c.Get(path)
+	u := c.baseURL.JoinPath(fmt.Sprintf("/api/v1/orgs/%s/tickets/count", orgID))
+
+	q := u.Query()
+	q.Add("distinct", "status")
+
+	u.RawQuery = q.Encode()
+
+	resp, err := c.Get(u)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +65,14 @@ func (c *APIClient) CountOrgTickets(orgID string) (map[TicketStatus]int, error) 
 
 // CountOrgAlarms returns a map of counts of all alarms related to an organisation, keyed by their type.
 func (c *APIClient) CountOrgAlarms(orgID string) (map[string]int, error) {
-	path := fmt.Sprintf("/api/v1/orgs/%s/alarms/count?distinct=type", orgID)
-	resp, err := c.Get(path)
+	u := c.baseURL.JoinPath(fmt.Sprintf("/api/v1/orgs/%s/alarms/count", orgID))
+
+	q := u.Query()
+	q.Add("distinct", "type")
+
+	u.RawQuery = q.Encode()
+
+	resp, err := c.Get(u)
 	if err != nil {
 		return nil, err
 	}

@@ -13,15 +13,18 @@ func TestNew(t *testing.T) {
 	testURL := "https://test.url.com"
 	testKey := "xxKEYxx"
 
-	c := New(&Config{
+	c, err := New(&Config{
 		BaseURL: testURL,
 		APIKey:  testKey,
 	}, nil)
-	if c.config.BaseURL != testURL {
-		t.Errorf("NewClient: expected BaseURL: %s, got: %s", testURL, c.config.BaseURL)
+	if err != nil {
+		t.Fatalf("NewClient: unexpected error: %v", err)
 	}
-	if c.config.APIKey != testKey {
-		t.Errorf("NewClient: expected APIKey: %s, got: %s", testKey, c.config.APIKey)
+	if c.baseURL.Scheme != "https" && c.baseURL.Host != "test.url.com" {
+		t.Errorf("NewClient: expected baseURL: %s, got: %s", testURL, c.baseURL.String())
+	}
+	if c.apiKey != testKey {
+		t.Errorf("NewClient: expected APIKey: %s, got: %s", testKey, c.apiKey)
 	}
 	if c.client.Timeout != time.Duration(10)*time.Second {
 		t.Errorf("NewClient: expected Timeout: 10, got: %d", c.client.Timeout)
@@ -71,5 +74,10 @@ func newTestClient(t *testing.T) *APIClient {
 	s := testAPIServer(t)
 	t.Cleanup(s.Close)
 
-	return New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
+	c, err := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
+	if err != nil {
+		t.Fatalf("newTestClient: unexpected error: %v", err)
+	}
+
+	return c
 }

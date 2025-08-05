@@ -34,13 +34,20 @@ type Config struct {
 
 // APIClient represents the API client.
 type APIClient struct {
-	config *Config
-	client *http.Client
-	logger *slog.Logger
+	baseURL *url.URL
+	apiKey  string
+	client  *http.Client
+	logger  *slog.Logger
+}
 }
 
 // New returns an instance of the API client.
-func New(config *Config, logger *slog.Logger) *APIClient {
+func New(config *Config, logger *slog.Logger) (*APIClient, error) {
+	baseURL, err := url.Parse(config.BaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse base URL: %w", err)
+	}
+
 	timeout := config.Timeout
 	if timeout <= 0 {
 		timeout = 10 * time.Second
@@ -51,23 +58,19 @@ func New(config *Config, logger *slog.Logger) *APIClient {
 	}
 
 	return &APIClient{
-		config: config,
-		logger: logger.With("module", "mistclient"),
+		baseURL: baseURL,
+		apiKey:  config.APIKey,
+		logger:  logger.With("module", "mistclient"),
 		client: &http.Client{
 			Timeout: timeout,
 		},
-	}
+	}, nil
 }
 
 // doRequest performs that actual HTTP client request against the provided API endpoint.
 // It constructs the URL based on the client configuration and supplied path, sets an
 // authentication header based on the API key, and returns the response or any errors.
-func (c *APIClient) doRequest(method, path string, body interface{}) (*http.Response, error) {
-	url, err := url.Parse(fmt.Sprintf("%s%s", c.config.BaseURL, path))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse request URL: %w", err)
-	}
-
+func (c *APIClient) doRequest(method string, u *url.URL, body interface{}) (*http.Response, error) {
 	var reqBody io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)
@@ -77,15 +80,15 @@ func (c *APIClient) doRequest(method, path string, body interface{}) (*http.Resp
 		reqBody = bytes.NewBuffer(data)
 	}
 
-	req, err := http.NewRequest(method, url.String(), reqBody)
+	req, err := http.NewRequest(method, u.String(), reqBody)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.config.APIKey))
+	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.apiKey))
 	req.Header.Set("Content-Type", "application/json")
 
-	c.logger.Debug("making API request", "method", method, "url", url.String())
+	c.logger.Debug("making API request", "method", method, "url", u.String())
 	resp, err := c.client.Do(req)
 	if err != nil {
 		c.logger.Error("request failed", "error", err)
@@ -114,21 +117,23 @@ func extractError(r *http.Response) error {
 }
 
 // Get is a convenience function for performing HTTP GET requests using the API client.
-func (c *APIClient) Get(path string) (*http.Response, error) {
-	return c.doRequest("GET", path, nil)
+func (c *APIClient) Get(u *url.URL) (*http.Response, error) {
+	return c.doRequest("GET", u, nil)
 }
 
 // Post is a convenience function for performing HTTP POST requests using the API client.
-func (c *APIClient) Post(path string, body interface{}) (*http.Response, error) {
-	return c.doRequest("POST", path, body)
+func (c *APIClient) Post(u *url.URL, body interface{}) (*http.Response, error) {
+	return c.doRequest("POST", u, body)
 }
 
 // Put is a convenience function for performing HTTP PUT requests using the API client.
-func (c *APIClient) Put(path string, body interface{}) (*http.Response, error) {
-	return c.doRequest("PUT", path, body)
+func (c *APIClient) Put(u *url.URL, body interface{}) (*http.Response, error) {
+	return c.doRequest("PUT", u, body)
 }
 
 // Delete is a convenience function for performing HTTP DELETE requests using the API client.
-func (c *APIClient) Delete(path string) (*http.Response, error) {
-	return c.doRequest("DELETE", path, nil)
+func (c *APIClient) Delete(u *url.URL) (*http.Response, error) {
+	return c.doRequest("DELETE", u, nil)
+}
+
 }
