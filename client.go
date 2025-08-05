@@ -16,13 +16,19 @@ package mistclient
 
 import (
 	"bytes"
+	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
+
+	"golang.org/x/net/websocket"
 )
 
 // Config represents the API access parameters.
@@ -39,6 +45,28 @@ type APIClient struct {
 	client  *http.Client
 	logger  *slog.Logger
 }
+
+// SubscriptionRequest represents a websocket subscription request
+type SubscriptionRequest struct {
+	Subscribe string `json:"subscribe"`
+}
+
+// SubscriptionResponse represents a websocket subscription response
+type SubscriptionResponse struct {
+	Event   string `json:"event"`
+	Channel string `json:"channel"`
+}
+
+// UnsubscribeRequest represents a websocket unsubscribe request
+type UnsubscribeRequest struct {
+	Unsubscribe string `json:"unsubscribe"`
+}
+
+// WebsocketMessage represents a message streamed by a websocket connection
+type WebsocketMessage struct {
+	Event   string `json:"event"`
+	Channel string `json:"channel"`
+	Data    string `json:"data"`
 }
 
 // New returns an instance of the API client.
@@ -136,4 +164,117 @@ func (c *APIClient) Delete(u *url.URL) (*http.Response, error) {
 	return c.doRequest("DELETE", u, nil)
 }
 
+func (c *APIClient) GetWebsocketURL() (*url.URL, error) {
+	u := *c.baseURL
+
+	switch u.Scheme {
+	case "http":
+		u.Scheme = "ws"
+	case "https":
+		u.Scheme = "wss"
+	case "ws", "wss":
+	default:
+		return nil, fmt.Errorf("unsupported websocket URL scheme: %s", u.Scheme)
+	}
+
+	if !strings.HasPrefix(u.Host, "api.") {
+		return nil, fmt.Errorf("unable to determin websocket endpoint address, base URL is not prefixed with 'api.': %s", u.Host)
+	}
+
+	u.Host = strings.Replace(u.Host, "api.", "api-ws.", 1)
+	u.Path = "/api-ws/v1/stream"
+
+	return &u, nil
+}
+
+func (c *APIClient) ConnectWebSocket() (*websocket.Conn, error) {
+	u, err := c.GetWebsocketURL()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse base URL: %w", err)
+	}
+
+	wsConfig, err := websocket.NewConfig(u.String(), c.baseURL.String())
+	if err != nil {
+		return nil, fmt.Errorf("failed to create websocket config: %w", err)
+	}
+
+	wsConfig.TlsConfig = &tls.Config{
+		ServerName: u.Host,
+	}
+
+	wsConfig.Dialer = &net.Dialer{
+		Timeout: c.client.Timeout,
+	}
+
+	wsConfig.Header.Set("Authorization", fmt.Sprintf("Token %s", c.apiKey))
+	wsConfig.Header.Set("Content-Type", "application/json")
+
+	return websocket.DialConfig(wsConfig)
+}
+
+func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan WebsocketMessage, error) {
+	conn, err := c.ConnectWebSocket()
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
+	}
+	c.logger.Debug("successfully connected to websocket", "url", conn.Config().Location.String())
+
+	if err := websocket.JSON.Send(conn, SubscriptionRequest{Subscribe: channel}); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to send websocket subscription request: %w", err)
+	}
+
+	var subResp SubscriptionResponse
+	if err := websocket.JSON.Receive(conn, &subResp); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to receive websocket subscription response: %w", err)
+	}
+
+	if subResp.Event != "channel_subscribed" {
+		conn.Close()
+		return nil, fmt.Errorf("websocket subscription failed: %s", subResp.Event)
+	}
+	c.logger.Debug("successfully subscribed to websocket channel", "channel", channel)
+
+	// Spawn a watcher to unsubscribe and close the conn when the context is done
+	go func() {
+		<-ctx.Done()
+		err := c.Unsubscribe(conn, channel)
+		if err != nil {
+			c.logger.Error("failed to unsubscribe from websocket channel", "error", err, "channel", channel)
+		}
+		conn.Close()
+	}()
+
+	msgChan := make(chan WebsocketMessage)
+
+	go func() {
+		defer close(msgChan)
+
+		for {
+			var msg WebsocketMessage
+			err := websocket.JSON.Receive(conn, &msg)
+			if err != nil {
+				if ctx.Err() != nil {
+					return
+				}
+				c.logger.Error("websocket receive error", "error", err)
+				return
+			}
+			c.logger.Debug("received websocket message", "channel", channel, "msg", fmt.Sprintf("%+v", msg))
+			msgChan <- msg
+		}
+	}()
+
+	return msgChan, nil
+}
+
+func (c *APIClient) Unsubscribe(conn *websocket.Conn, channel string) error {
+	if err := websocket.JSON.Send(conn, UnsubscribeRequest{Unsubscribe: channel}); err != nil {
+		return fmt.Errorf("failed to send websocket unsubscribe request: %w", err)
+	}
+	c.logger.Debug("successfully unsubscribed from websocket channel", "channel", channel)
+
+	return nil
 }
