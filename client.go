@@ -21,12 +21,13 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"time"
 )
 
 // Config represents the API access parameters.
 type Config struct {
-	BaseURL string        `yaml:"base_url"`
+	BaseURL *url.URL      `yaml:"base_url"`
 	APIKey  string        `yaml:"api_key"`
 	Timeout time.Duration `yaml:"timeout"`
 }
@@ -62,7 +63,10 @@ func New(config *Config, logger *slog.Logger) *APIClient {
 // It constructs the URL based on the client configuration and supplied path, sets an
 // authentication header based on the API key, and returns the response or any errors.
 func (c *APIClient) doRequest(method, path string, body interface{}) (*http.Response, error) {
-	url := c.config.BaseURL + path
+	url, err := url.Parse(fmt.Sprintf("%s%s", c.config.BaseURL.String(), path))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse request URL: %w", err)
+	}
 
 	var reqBody io.Reader
 	if body != nil {
@@ -73,7 +77,7 @@ func (c *APIClient) doRequest(method, path string, body interface{}) (*http.Resp
 		reqBody = bytes.NewBuffer(data)
 	}
 
-	req, err := http.NewRequest(method, url, reqBody)
+	req, err := http.NewRequest(method, url.String(), reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +85,7 @@ func (c *APIClient) doRequest(method, path string, body interface{}) (*http.Resp
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.config.APIKey))
 	req.Header.Set("Content-Type", "application/json")
 
-	c.logger.Debug("making API request", "method", method, "url", url)
+	c.logger.Debug("making API request", "method", method, "url", url.String())
 	resp, err := c.client.Do(req)
 	if err != nil {
 		c.logger.Error("request failed", "error", err)

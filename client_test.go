@@ -4,13 +4,18 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 	"time"
 )
 
-func TestNewClient(t *testing.T) {
-	testURL := "https://test.url.com"
+func TestNew(t *testing.T) {
+	testURL, err := url.Parse("https://test.url.com")
+	if err != nil {
+		t.Errorf("unable to parse test URL: %s", err)
+	}
+
 	testKey := "xxKEYxx"
 
 	c := New(&Config{
@@ -63,4 +68,15 @@ func testAPIServer(t *testing.T) *httptest.Server {
 		w.WriteHeader(http.StatusOK)
 		w.Write(respData)
 	}))
+}
+
+func newTestClient(t *testing.T, s *httptest.Server) *APIClient {
+	t.Helper()
+
+	baseURL, err := url.Parse(s.URL)
+	if err != nil {
+		t.Errorf("unable to parse test server URL: %s", err)
+	}
+
+	return New(&Config{BaseURL: baseURL, APIKey: "testAPIKey"}, nil)
 }

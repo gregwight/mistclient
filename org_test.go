@@ -8,7 +8,7 @@ func TestGetOrgSites(t *testing.T) {
 	s := testAPIServer(t)
 	defer s.Close()
 
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
+	c := newTestClient(t, s)
 
 	orgID, siteID := "test-org-id", "4ac1dcf4-9d8b-7211-65c4-057819f0862b"
 	sites, err := c.GetOrgSites(orgID)
@@ -35,7 +35,7 @@ func TestCountOrgTickets(t *testing.T) {
 	s := testAPIServer(t)
 	defer s.Close()
 
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
+	c := newTestClient(t, s)
 
 	orgID := "test-org-id"
 	ticketCounts, err := c.CountOrgTickets(orgID)
@@ -53,7 +53,7 @@ func TestCountOrgAlarms(t *testing.T) {
 	s := testAPIServer(t)
 	defer s.Close()
 
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
+	c := newTestClient(t, s)
 
 	orgID := "test-org-id"
 	alarmCounts, err := c.CountOrgAlarms(orgID)
