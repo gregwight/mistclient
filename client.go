@@ -33,9 +33,9 @@ import (
 
 // Config represents the API access parameters.
 type Config struct {
-	BaseURL string        `yaml:"base_url"`
-	APIKey  string        `yaml:"api_key"`
-	Timeout time.Duration `yaml:"timeout"`
+	BaseURL string        `yaml:"base_url,omitempty"`
+	APIKey  string        `yaml:"api_key,omitempty"`
+	Timeout time.Duration `yaml:"timeout,omitempty"`
 }
 
 // APIClient represents the API client.
