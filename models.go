@@ -22,7 +22,7 @@ func (s Seconds) MarshalJSON() ([]byte, error) {
 
 func (s *Seconds) UnmarshalJSON(b []byte) error {
 	// The Mist API returns this value as a float for some unknown reason...
-	var seconds float64
+	var seconds float32
 	if err := json.Unmarshal(b, &seconds); err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ type UnixTime struct {
 }
 
 func (ut *UnixTime) UnmarshalJSON(b []byte) error {
-	var dirtyTimestamp float64
+	var dirtyTimestamp float32
 	if err := json.Unmarshal(b, &dirtyTimestamp); err != nil {
 		return err
 	}
@@ -91,13 +91,66 @@ type Alarm struct {
 
 // Site represents a physical location containing devices
 type Site struct {
-	ID           string             `json:"id,omitempty"`
-	Name         string             `json:"name,omitempty"`
-	Timezone     string             `json:"timezone,omitempty"`
-	CountryCode  string             `json:"country_code,omitempty"`
-	LatLng       map[string]float32 `json:"latlng,omitempty"`
-	SiteGroupIDs []string           `json:"sitegroup_ids,omitempty"`
-	Address      string             `json:"address,omitempty"`
+	ID                string             `json:"id,omitempty"`
+	Name              string             `json:"name,omitempty"`
+	Timezone          string             `json:"timezone,omitempty"`
+	CountryCode       string             `json:"country_code,omitempty"`
+	LatLng            map[string]float32 `json:"latlng,omitempty"`
+	SiteGroupIDs      []string           `json:"sitegroup_ids,omitempty"`
+	Address           string             `json:"address,omitempty"`
+	OrgID             string             `json:"org_id,omitempty"`
+	ModifiedTime      UnixTime           `json:"modified_time,omitzero"`
+	CreatedTime       UnixTime           `json:"created_time,omitzero"`
+	Notes             string             `json:"notes,omitempty"`
+	AlarmTemplateID   string             `json:"alarmtemplate_id,omitempty"`
+	NetworkTemplateID string             `json:"networktemplate_id,omitempty"`
+	RFTemplateID      string             `json:"rftemplate_id,omitempty"`
+	APTemplateID      string             `json:"aptemplate_id,omitempty"`
+	GatewayTemplateID string             `json:"gatewaytemplate_id,omitempty"`
+	ApportTemplateID  string             `json:"apporttemplate_id,omitempty"`
+	SecPolicyID       string             `json:"secpolicy_id,omitempty"`
+}
+
+type Org struct {
+	ID              string   `json:"id,omitempty"`
+	Name            string   `json:"name,omitempty"`
+	MSPID           string   `json:"msp_id,omitempty"`
+	AllowMist       bool     `json:"allow_mist,omitempty"`
+	AlarmTemplateID string   `json:"alarmtemplate_id,omitempty"`
+	OrgGroupIDs     []string `json:"orggroup_ids,omitempty"`
+	SessionExpiry   Seconds  `json:"session_expiry,omitempty"`
+	ModifiedTime    UnixTime `json:"modified_time,omitzero"`
+	CreatedTime     UnixTime `json:"created_time,omitzero"`
+}
+
+// OrgStat holds operational statistics and data relating to an org
+type OrgStat struct {
+	NumAps                int `json:"num_aps,omitempty"`
+	NumGateways           int `json:"num_gateways,omitempty"`
+	NumMxedges            int `json:"num_mxedges,omitempty"`
+	NumSwitches           int `json:"num_switches,omitempty"`
+	NumUnassignedAps      int `json:"num_unassigned_aps,omitempty"`
+	NumUnassignedGateways int `json:"num_unassigned_gateways,omitempty"`
+	NumUnassignedSwitches int `json:"num_unassigned_switches,omitempty"`
+}
+
+// SiteStat holds operational statistics and data relating to a Site
+type SiteStat struct {
+	Site
+
+	Lat                 float32 `json:"lat,omitempty"`
+	Lng                 float32 `json:"lng,omitempty"`
+	MSPID               string  `json:"msp_id,omitempty"`
+	NumAP               int     `json:"num_ap,omitempty"`
+	NumAPConnected      int     `json:"num_ap_connected,omitempty"`
+	NumClients          int     `json:"num_clients,omitempty"`
+	NumDevices          int     `json:"num_devices,omitempty"`
+	NumDevicesConnected int     `json:"num_devices_connected,omitempty"`
+	NumGateway          int     `json:"num_gateway,omitempty"`
+	NumGatewayConnected int     `json:"num_gateway_connected,omitempty"`
+	NumSwitch           int     `json:"num_switch,omitempty"`
+	NumSwitchConnected  int     `json:"num_switch_connected,omitempty"`
+	TZOffset            int     `json:"tzoffset,omitempty"`
 }
 
 // Device represents a physical piece of network equipment
@@ -119,44 +172,68 @@ type Device struct {
 type DeviceStat struct {
 	Device
 
-	LastSeen   UnixTime     `json:"last_seen,omitzero"`
-	NumClients int          `json:"num_clients,omitempty"`
-	Version    string       `json:"version,omitempty"`
-	Status     DeviceStatus `json:"status,omitempty"`
-	IP         netip.Addr   `json:"ip,omitempty"`
-	ExtIP      netip.Addr   `json:"ext_ip,omitempty"`
-	NumWLANs   int          `json:"num_wlans,omitempty"`
-	Uptime     Seconds      `json:"uptime,omitempty"`
-	TxBps      int          `json:"tx_bps,omitempty"`
-	RxBps      int          `json:"rx_bps,omitempty"`
-	TxBytes    int          `json:"tx_bytes,omitempty"`
-	RxBytes    int          `json:"rx_bytes,omitempty"`
-	TxPkts     int          `json:"tx_pkts,omitempty"`
-	RxPkts     int          `json:"rx_pkts,omitempty"`
-	PowerSrc   string       `json:"power_src,omitempty"`
+	CPUUtil          int          `json:"cpu_util,omitempty"`
+	EnvStat          EnvStat      `json:"env_stat,omitempty"`
+	LastSeen         UnixTime     `json:"last_seen,omitzero"`
+	NumClients       int          `json:"num_clients,omitempty"`
+	Version          string       `json:"version,omitempty"`
+	Status           DeviceStatus `json:"status,omitempty"`
+	IP               netip.Addr   `json:"ip,omitempty"`
+	ExtIP            netip.Addr   `json:"ext_ip,omitempty"`
+	NumWLANs         int          `json:"num_wlans,omitempty"`
+	Uptime           Seconds      `json:"uptime,omitempty"`
+	TxBps            int          `json:"tx_bps,omitempty"`
+	RxBps            int          `json:"rx_bps,omitempty"`
+	TxBytes          int          `json:"tx_bytes,omitempty"`
+	RxBytes          int          `json:"rx_bytes,omitempty"`
+	TxPkts           int          `json:"tx_pkts,omitempty"`
+	RxPkts           int          `json:"rx_pkts,omitempty"`
+	PowerSrc         string       `json:"power_src,omitempty"`
+	PowerBudget      int          `json:"power_budget,omitempty"`
+	PowerOpMode      string       `json:"power_op_mode,omitempty"`
+	PowerConstrained bool         `json:"power_constrained,omitempty"`
 
 	RadioStats map[RadioConfig]RadioStat `json:"radio_stat,omitempty"`
 }
 
+// EnvStat holds operational data relating to a device's environment
+type EnvStat struct {
+	AccelX       float32 `json:"accel_x,omitempty"`
+	AccelY       float32 `json:"accel_y,omitempty"`
+	AccelZ       float32 `json:"accel_z,omitempty"`
+	AmbientTemp  int     `json:"ambient_temp,omitempty"`
+	Attitude     int     `json:"attitude,omitempty"`
+	CPUTemp      int     `json:"cpu_temp,omitempty"`
+	Humidity     int     `json:"humidity,omitempty"`
+	MagneX       float32 `json:"magne_x,omitempty"`
+	MagneY       float32 `json:"magne_y,omitempty"`
+	MagneZ       float32 `json:"magne_z,omitempty"`
+	Pressure     float32 `json:"pressure,omitempty"`
+	VcoreVoltage int     `json:"vcore_voltage,omitempty"`
+}
+
 // RadioStat holds operational statistics and data relating to the radio connectivity of a Device
 type RadioStat struct {
-	Mac                 string `json:"mac,omitempty"`
-	NumClients          int    `json:"num_clients,omitempty"`
-	NumWLANs            int    `json:"num_wlans,omitempty"`
-	Channel             int    `json:"channel,omitempty"`
-	Bandwidth           int    `json:"bandwidth,omitempty"`
-	Power               int    `json:"power,omitempty"`
-	TxBytes             int    `json:"tx_bytes,omitempty"`
-	TxPkts              int    `json:"tx_pkts,omitempty"`
-	RxBytes             int    `json:"rx_bytes,omitempty"`
-	RxPkts              int    `json:"rx_pkts,omitempty"`
-	UtilAll             int    `json:"util_all,omitempty"`
-	UtilTx              int    `json:"util_tx,omitempty"`
-	UtilRxInBSS         int    `json:"util_rx_in_bss,omitempty"`
-	UtilRxOtherBSS      int    `json:"util_rx_other_bss,omitempty"`
-	UtilUnknownWiFi     int    `json:"util_unknown_wifi,omitempty"`
-	UtilNonWiFi         int    `json:"util_non_wifi,omitempty"`
-	UtilUndecodableWiFi int    `json:"util_undecodable_wifi,omitempty"`
+	Mac                    string `json:"mac,omitempty"`
+	NumClients             int    `json:"num_clients,omitempty"`
+	NumWLANs               int    `json:"num_wlans,omitempty"`
+	Channel                int    `json:"channel,omitempty"`
+	Bandwidth              int    `json:"bandwidth,omitempty"`
+	DynamicChainingEnabled bool   `json:"dynamic_chaining_enabled,omitempty"`
+	Power                  int    `json:"power,omitempty"`
+	NoiseFloor             int    `json:"noise_floor,omitempty"`
+	TxBytes                int    `json:"tx_bytes,omitempty"`
+	TxPkts                 int    `json:"tx_pkts,omitempty"`
+	RxBytes                int    `json:"rx_bytes,omitempty"`
+	RxPkts                 int    `json:"rx_pkts,omitempty"`
+	Usage                  string `json:"usage,omitempty"`
+	UtilAll                int    `json:"util_all,omitempty"`
+	UtilTx                 int    `json:"util_tx,omitempty"`
+	UtilRxInBSS            int    `json:"util_rx_in_bss,omitempty"`
+	UtilRxOtherBSS         int    `json:"util_rx_other_bss,omitempty"`
+	UtilUnknownWiFi        int    `json:"util_unknown_wifi,omitempty"`
+	UtilNonWiFi            int    `json:"util_non_wifi,omitempty"`
+	UtilUndecodableWiFi    int    `json:"util_undecodable_wifi,omitempty"`
 }
 
 // Client represents an end-user device connected to the radio of a Device
@@ -177,21 +254,21 @@ type Client struct {
 	WLANID      string     `json:"wlan_id,omitempty"`
 	PSKID       string     `json:"psk_id,omitempty"`
 
-	Uptime      Seconds `json:"uptime,omitempty"`
-	Idletime    Seconds `json:"idle_time,omitempty"`
-	PowerSaving bool    `json:"power_saving,omitempty"`
-	Band        Radio   `json:"band,omitempty"`
-	Proto       string  `json:"proto,omitempty"`
-	KeyMgmt     string  `json:"key_mgmt,omitempty"`
-	DualBand    bool    `json:"dual_band,omitempty"`
+	Uptime      Seconds    `json:"uptime,omitempty"`
+	Idletime    Seconds    `json:"idle_time,omitempty"`
+	PowerSaving bool       `json:"power_saving,omitempty"`
+	Band        Radio      `json:"band,omitempty"`
+	Proto       Dot11Proto `json:"proto,omitempty"`
+	KeyMgmt     string     `json:"key_mgmt,omitempty"`
+	DualBand    bool       `json:"dual_band,omitempty"`
 
 	Channel        int     `json:"channel,omitempty"`
 	VLANID         string  `json:"vlan_id,omitempty"`
 	AirspaceIfname string  `json:"airespace_ifname,omitempty"`
 	RSSI           int     `json:"rssi,omitempty"`
 	SNR            int     `json:"snr,omitempty"`
-	TxRate         float64 `json:"tx_rate,omitempty"`
-	RxRate         float64 `json:"rx_rate,omitempty"`
+	TxRate         float32 `json:"tx_rate,omitempty"`
+	RxRate         float32 `json:"rx_rate,omitempty"`
 
 	TxBytes   int `json:"tx_bytes,omitempty"`
 	TxBps     int `json:"tx_bps,omitempty"`
@@ -203,10 +280,10 @@ type Client struct {
 	RxRetries int `json:"rx_retries,omitempty"`
 
 	MapID          string  `json:"map_id,omitempty"`
-	X              float64 `json:"x,omitempty"`
-	Y              float64 `json:"y,omitempty"`
-	Xm             float64 `json:"x_m,omitempty"`
-	Ym             float64 `json:"y_m,omitempty"`
+	X              float32 `json:"x,omitempty"`
+	Y              float32 `json:"y,omitempty"`
+	Xm             float32 `json:"x_m,omitempty"`
+	Ym             float32 `json:"y_m,omitempty"`
 	NumLocatingAPs int     `json:"num_locating_aps,omitempty"`
 
 	IsGuest  bool     `json:"is_guest,omitempty"`

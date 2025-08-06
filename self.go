@@ -9,7 +9,7 @@ import (
 func (c *APIClient) GetSelf() (Self, error) {
 	var self Self
 
-	resp, err := c.Get("/api/v1/self")
+	resp, err := c.Get(c.baseURL.JoinPath("/api/v1/self"))
 	if err != nil {
 		return self, err
 	}
@@ -19,9 +19,7 @@ func (c *APIClient) GetSelf() (Self, error) {
 		return self, extractError(resp)
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&self); err != nil {
-		return self, err
-	}
+	err = json.NewDecoder(resp.Body).Decode(&self)
 
-	return self, nil
+	return self, err
 }

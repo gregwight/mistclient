@@ -1,15 +1,18 @@
 package mistclient
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net"
+	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
 
 func TestGetSiteDevices(t *testing.T) {
-	s := testAPIServer(t)
-	defer s.Close()
-
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
+	c := newTestClient(t)
 
 	siteID := "test-site-id"
 	devices, err := c.GetSiteDevices(siteID)
@@ -30,11 +33,95 @@ func TestGetSiteDevices(t *testing.T) {
 	}
 }
 
-func TestGetSiteDeviceStats(t *testing.T) {
-	s := testAPIServer(t)
-	defer s.Close()
+func TestStreamSiteDeviceStats(t *testing.T) {
+	testDeviceStat := DeviceStat{
+		Device: Device{
+			ID:     "test-device-id",
+			Name:   "test-device",
+			SiteID: "test-site-id",
+		},
+		Status: Connected,
+	}
+	testData, err := json.Marshal(testDeviceStat)
+	if err != nil {
+		t.Fatalf("failed to marshal test data: %v", err)
+	}
 
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
+	wsServer := testWebsocketServer(t, false, string(testData))
+	defer wsServer.Close()
+
+	wsURL, err := url.Parse(wsServer.URL)
+	if err != nil {
+		t.Fatalf("failed to parse websocket server URL: %v", err)
+	}
+	host, port, err := net.SplitHostPort(wsURL.Host)
+	if err != nil {
+		t.Fatalf("failed to split host/port: %v", err)
+	}
+	testBaseURL := fmt.Sprintf("http://api.%s.nip.io:%s", host, port)
+
+	c, err := New(&Config{BaseURL: testBaseURL, APIKey: "testAPIKey"}, nil)
+	if err != nil {
+		t.Fatalf("New: unexpected error: %v", err)
+	}
+
+	siteID := "test-site-id"
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	statChan, err := c.StreamSiteDeviceStats(ctx, siteID)
+	if err != nil {
+		t.Fatalf("APIClient.StreamSiteDeviceStats(%s) threw error: %v", siteID, err)
+	}
+
+	select {
+	case stat, ok := <-statChan:
+		if !ok {
+			t.Fatalf("APIClient.StreamSiteDeviceStats(%s): channel closed unexpectedly", siteID)
+		}
+		if stat.ID != testDeviceStat.ID {
+			t.Errorf("StreamSiteDeviceStats().ID: expected %q, got %q", testDeviceStat.ID, stat.ID)
+		}
+		if stat.Status != testDeviceStat.Status {
+			t.Errorf("StreamSiteDeviceStats().Status: expected %q, got %q", testDeviceStat.Status, stat.Status)
+		}
+	case <-ctx.Done():
+		t.Fatal("APIClient.StreamSiteDeviceStats(): timed out waiting for stat")
+	}
+
+	cancel()
+	select {
+	case _, ok := <-statChan:
+		if ok {
+			t.Error("APIClient.StreamSiteDeviceStats(): channel not closed after context cancellation")
+		}
+	case <-time.After(1 * time.Second):
+		t.Fatal("APIClient.StreamSiteDeviceStats(): channel not closed within 1s after context cancellation")
+	}
+}
+
+func TestStreamSiteDeviceStats_SubFails(t *testing.T) {
+	wsServer := testWebsocketServer(t, true)
+	defer wsServer.Close()
+
+	wsURL, _ := url.Parse(wsServer.URL)
+	host, port, _ := net.SplitHostPort(wsURL.Host)
+	testBaseURL := fmt.Sprintf("http://api.%s.nip.io:%s", host, port)
+
+	c, _ := New(&Config{BaseURL: testBaseURL, APIKey: "testAPIKey"}, nil)
+
+	_, err := c.StreamSiteDeviceStats(context.Background(), "test-site-id")
+	if err == nil {
+		t.Fatal("StreamSiteDeviceStats() expected an error, got nil")
+	}
+	expectedErr := "websocket subscription failed: subscription_failed"
+	if !strings.Contains(err.Error(), expectedErr) {
+		t.Errorf("StreamSiteDeviceStats() error = %q, want to contain %q", err, expectedErr)
+	}
+}
+
+func TestGetSiteDeviceStats(t *testing.T) {
+	c := newTestClient(t)
 
 	siteID := "test-site-id"
 	deviceStats, err := c.GetSiteDeviceStats(siteID)
@@ -55,13 +142,10 @@ func TestGetSiteDeviceStats(t *testing.T) {
 }
 
 func TestGetSiteClients(t *testing.T) {
-	s := testAPIServer(t)
-	defer s.Close()
-
-	c := New(&Config{BaseURL: s.URL, APIKey: "testAPIKey"}, nil)
+	c := newTestClient(t)
 
 	siteID := "test-site-id"
-	clients, err := c.GetSiteClients(siteID)
+	clients, err := c.GetSiteClientStats(siteID)
 	if err != nil {
 		t.Errorf("APIClient.GetSiteClients(%s): Threw error: %s", siteID, err)
 	}
