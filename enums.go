@@ -92,6 +92,10 @@ func (dt *DeviceType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (dt DeviceType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(dt.String())
+}
+
 type DeviceStatus int
 
 const (
@@ -138,6 +142,10 @@ func (ds *DeviceStatus) UnmarshalJSON(data []byte) error {
 	}
 	*ds = DeviceStatusFromString(s)
 	return nil
+}
+
+func (ds DeviceStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ds.String())
 }
 
 type Radio int
@@ -191,6 +199,10 @@ func (r *Radio) UnmarshalJSON(b []byte) error {
 	return r.unmarshal(b)
 }
 
+func (r Radio) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.String())
+}
+
 type RadioConfig int
 
 const (
@@ -240,6 +252,10 @@ func (rc *RadioConfig) UnmarshalText(b []byte) error {
 
 func (rc *RadioConfig) UnmarshalJSON(b []byte) error {
 	return rc.unmarshal(b)
+}
+
+func (rc RadioConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(rc.String())
 }
 
 type Dot11Proto int
@@ -306,4 +322,8 @@ func (dp *Dot11Proto) UnmarshalText(b []byte) error {
 
 func (dp *Dot11Proto) UnmarshalJSON(b []byte) error {
 	return dp.unmarshal(b)
+}
+
+func (dp Dot11Proto) MarshalJSON() ([]byte, error) {
+	return json.Marshal(dp.String())
 }
