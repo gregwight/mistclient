@@ -278,3 +278,28 @@ func (c *APIClient) Unsubscribe(conn *websocket.Conn, channel string) error {
 
 	return nil
 }
+
+// streamStats is a generic helper to subscribe to a websocket channel and stream typed data
+func streamStats[T any](ctx context.Context, c *APIClient, channel string) (<-chan T, error) {
+	msgChan, err := c.Subscribe(ctx, channel)
+	if err != nil {
+		return nil, fmt.Errorf("failed to subscribe to websocket channel %s: %w", channel, err)
+	}
+
+	statChan := make(chan T)
+
+	go func() {
+		defer close(statChan)
+
+		for msg := range msgChan {
+			var stat T
+			if err := json.Unmarshal([]byte(msg.Data), &stat); err != nil {
+				c.logger.Error("failed to unmarshal websocket message", "error", err, "channel", channel)
+				continue
+			}
+			statChan <- stat
+		}
+	}()
+
+	return statChan, nil
+}

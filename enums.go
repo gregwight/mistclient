@@ -241,3 +241,69 @@ func (rc *RadioConfig) UnmarshalText(b []byte) error {
 func (rc *RadioConfig) UnmarshalJSON(b []byte) error {
 	return rc.unmarshal(b)
 }
+
+type Dot11Proto int
+
+const (
+	A Dot11Proto = iota + 1
+	AC
+	AX
+	B
+	G
+	N
+)
+
+func (dp Dot11Proto) String() string {
+	switch dp {
+	case A:
+		return "a"
+	case AC:
+		return "ac"
+	case AX:
+		return "ax"
+	case B:
+		return "b"
+	case G:
+		return "g"
+	case N:
+		return "n"
+	default:
+		return "unknown"
+	}
+}
+
+func Dot11ProtoFromString(dp string) Dot11Proto {
+	switch dp {
+	case "a":
+		return A
+	case "ac":
+		return AC
+	case "ax":
+		return AX
+	case "b":
+		return B
+	case "g":
+		return G
+	case "n":
+		return N
+	default:
+		return 0
+	}
+}
+
+func (dp *Dot11Proto) unmarshal(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("failed to unmarshal radio config band from %q: %w", string(data), err)
+	}
+	*dp = Dot11ProtoFromString(s)
+	return nil
+}
+
+func (dp *Dot11Proto) UnmarshalText(b []byte) error {
+	return dp.unmarshal(b)
+}
+
+func (dp *Dot11Proto) UnmarshalJSON(b []byte) error {
+	return dp.unmarshal(b)
+}

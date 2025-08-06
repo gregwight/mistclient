@@ -19,9 +19,7 @@ func (c *APIClient) GetSelf() (Self, error) {
 		return self, extractError(resp)
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&self); err != nil {
-		return self, err
-	}
+	err = json.NewDecoder(resp.Body).Decode(&self)
 
-	return self, nil
+	return self, err
 }
