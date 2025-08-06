@@ -96,27 +96,29 @@ func main() {
 
 The client is organized by Mist API resources (e.g., Self, Organization, Site).
 
-### Self
-*   `GetSelf() (Self, error)` -> `GET /api/v1/self`
+### Self Endpoints
+| Method Signature | API Endpoint |
+|---|---|
+| `GetSelf() (Self, error)` | `GET /api/v1/self` |
 
-### Organization
-*   `GetOrgSites(orgID string) ([]Site, error)` -> `GET /api/v1/orgs/:org_id/sites`
-*   `CountOrgTickets(orgID string) (Count, error)` -> `GET /api/v1/orgs/:org_id/tickets/count`
-*   `CountOrgAlarms(orgID string) (Count, error)` -> `GET /api/v1/orgs/:org_id/alarms/count`
+### Organization Endpoints
+| Method Signature | API Endpoint |
+|---|---|
+| `GetOrgSites(orgID string) ([]Site, error)` | `GET /api/v1/orgs/:org_id/sites` |
+| `CountOrgTickets(orgID string) (Count, error)` | `GET /api/v1/orgs/:org_id/tickets/count` |
+| `CountOrgAlarms(orgID string) (Count, error)` | `GET /api/v1/orgs/:org_id/alarms/count` |
 
-### Site
-
-#### REST API
-*   `GetSiteStats(siteID string) (SiteStat, error)` -> `GET /api/v1/sites/:site_id/stats`
-*   `GetSiteDevices(siteID string) ([]Device, error)` -> `GET /api/v1/sites/:site_id/devices`
-*   `GetSiteDeviceStats(siteID string) ([]DeviceStat, error)` -> `GET /api/v1/sites/:site_id/stats/devices`
-*   `GetSiteClientStats(siteID string) ([]Client, error)` -> `GET /api/v1/sites/:site_id/stats/clients`
-
-#### Streaming (WebSocket)
-*   `StreamSiteStats(ctx context.Context, siteID string) (<-chan SiteStat, error)` -> `stream /sites/:site_id/stats`
-*   `StreamSiteDevices(ctx context.Context, siteID string) (<-chan Device, error)` -> `stream /sites/:site_id/devices`
-*   `StreamSiteDeviceStats(ctx context.Context, siteID string) (<-chan DeviceStat, error)` -> `stream /sites/:site_id/stats/devices`
-*   `StreamSiteClientStats(ctx context.Context, siteID string) (<-chan Client, error)` -> `stream /sites/:site_id/stats/clients`
+### Site Endpoints
+| Method Signature | API Endpoint | Type |
+|---|---|---|
+| `GetSiteStats(siteID string) (SiteStat, error)` | `GET /api/v1/sites/:site_id/stats` | REST |
+| `GetSiteDevices(siteID string) ([]Device, error)` | `GET /api/v1/sites/:site_id/devices` | REST |
+| `GetSiteDeviceStats(siteID string) ([]DeviceStat, error)` | `GET /api/v1/sites/:site_id/stats/devices` | REST |
+| `GetSiteClientStats(siteID string) ([]Client, error)` | `GET /api/v1/sites/:site_id/stats/clients` | REST |
+| `StreamSiteStats(ctx context.Context, siteID string) (<-chan SiteStat, error)` | `stream /sites/:site_id/stats` | WebSocket |
+| `StreamSiteDevices(ctx context.Context, siteID string) (<-chan Device, error)` | `stream /sites/:site_id/devices` | WebSocket |
+| `StreamSiteDeviceStats(ctx context.Context, siteID string) (<-chan DeviceStat, error)` | `stream /sites/:site_id/stats/devices` | WebSocket |
+| `StreamSiteClientStats(ctx context.Context, siteID string) (<-chan Client, error)` | `stream /sites/:site_id/stats/clients` | WebSocket |
 
 ## Testing
 
