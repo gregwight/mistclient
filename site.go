@@ -26,11 +26,6 @@ func (c *APIClient) GetSiteStats(siteID string) (SiteStat, error) {
 	return siteStat, err
 }
 
-// StreamSiteStats opens a websocket connection and subscribes to the site statistics stream
-func (c *APIClient) StreamSiteStats(ctx context.Context, siteID string) (<-chan SiteStat, error) {
-	return streamStats[SiteStat](ctx, c, fmt.Sprintf("/sites/%s/stats", siteID))
-}
-
 // GetSiteDevices fetches and returns a list of all devices configured at a site
 func (c *APIClient) GetSiteDevices(siteID string) ([]Device, error) {
 	resp, err := c.Get(c.baseURL.JoinPath(fmt.Sprintf("/api/v1/sites/%s/devices", siteID)))
