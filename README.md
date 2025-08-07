@@ -6,6 +6,17 @@
 
 This package was created with an initial focus on observability, providing access to endpoints useful for building monitoring and exporting tools (e.g. a Prometheus exporter).
 
+## Features
+
+-   Typed Go models for all supported API responses.
+-   Support for both REST and WebSocket streaming endpoints.
+-   Context-aware for handling cancellations and timeouts.
+-   Configurable logger for integrating with your application's logging.
+
+## Requirements
+
+*   **Go 1.22 or newer is required.** This library uses features of Go's `for` loop semantics that were introduced in version 1.22. Using an older version of Go may lead to subtle concurrency bugs.
+
 ## Installation
 
 ```sh
