@@ -224,12 +224,16 @@ func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan Webso
 		conn.Close()
 		return nil, fmt.Errorf("failed to send websocket subscription request: %w", err)
 	}
+	c.logger.Debug("successfully sent websocket subscription request", "channel", channel)
 
 	var subResp SubscriptionResponse
+	conn.SetReadDeadline(time.Now().Add(c.client.Timeout))
 	if err := websocket.JSON.Receive(conn, &subResp); err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("failed to receive websocket subscription response: %w", err)
 	}
+	conn.SetReadDeadline(time.Time{})
+	c.logger.Debug("successfully received websocket subscription response", "channel", channel)
 
 	if subResp.Event != "channel_subscribed" {
 		conn.Close()
