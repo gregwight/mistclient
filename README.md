@@ -115,7 +115,6 @@ The client is organized by Mist API resources (e.g., Self, Organization, Site).
 | `GetSiteDevices(siteID string) ([]Device, error)` | `GET /api/v1/sites/:site_id/devices` | REST |
 | `GetSiteDeviceStats(siteID string) ([]DeviceStat, error)` | `GET /api/v1/sites/:site_id/stats/devices` | REST |
 | `GetSiteClientStats(siteID string) ([]Client, error)` | `GET /api/v1/sites/:site_id/stats/clients` | REST |
-| `StreamSiteStats(ctx context.Context, siteID string) (<-chan SiteStat, error)` | `stream /sites/:site_id/stats` | WebSocket |
 | `StreamSiteDevices(ctx context.Context, siteID string) (<-chan Device, error)` | `stream /sites/:site_id/devices` | WebSocket |
 | `StreamSiteDeviceStats(ctx context.Context, siteID string) (<-chan DeviceStat, error)` | `stream /sites/:site_id/stats/devices` | WebSocket |
 | `StreamSiteClientStats(ctx context.Context, siteID string) (<-chan Client, error)` | `stream /sites/:site_id/stats/clients` | WebSocket |
