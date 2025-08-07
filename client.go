@@ -266,7 +266,7 @@ func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan Webso
 				c.logger.Error("websocket receive error", "error", err)
 				return
 			}
-			c.logger.Debug("received websocket message", "channel", channel, "msg", fmt.Sprintf("%+v", msg))
+			c.logger.Debug("received websocket message", "channel", channel)
 			msgChan <- msg
 		}
 	}()
