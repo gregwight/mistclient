@@ -215,7 +215,6 @@ func (c *APIClient) ConnectWebSocket() (*websocket.Conn, error) {
 func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan WebsocketMessage, error) {
 	conn, err := c.ConnectWebSocket()
 	if err != nil {
-		conn.Close()
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
 	c.logger.Debug("successfully connected to websocket", "url", conn.Config().Location.String())
