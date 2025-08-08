@@ -35,6 +35,16 @@ type UnixTime struct {
 	time.Time
 }
 
+// MarshalJSON implements the [json.Marshaler] interface.
+func (ut UnixTime) MarshalJSON() ([]byte, error) {
+	s := ut.Unix()
+	b, err := json.Marshal(s)
+	if err != nil {
+		return nil, errors.New("UnixTime.MarshalJSON: " + err.Error())
+	}
+	return b, nil
+}
+
 func (ut *UnixTime) UnmarshalJSON(b []byte) error {
 	var dirtyTimestamp float32
 	if err := json.Unmarshal(b, &dirtyTimestamp); err != nil {
@@ -309,4 +319,100 @@ type Guest struct {
 // Airwatch holds information regarding the 'airwatch` status of a Client
 type Airwatch struct {
 	Authorized bool `json:"authorized,omitempty"`
+}
+
+// StreamedDeviceStat holds information regarding a device returned by the websockets streaming stats API
+type StreamedDeviceStat struct {
+	Mac        string                            `json:"mac,omitempty"`
+	Version    string                            `json:"version,omitempty"`
+	IP         string                            `json:"ip,omitempty"`
+	ExtIP      string                            `json:"ext_ip,omitempty"`
+	PowerSrc   string                            `json:"power_src,omitempty"`
+	Uptime     int                               `json:"uptime,omitempty"`
+	LastSeen   UnixTime                          `json:"last_seen,omitempty"`
+	NumClients int                               `json:"num_clients,omitempty"`
+	IPStat     StreamedIPStat                    `json:"ip_stat,omitempty"`
+	RadioStats map[RadioConfig]StreamedRadioStat `json:"radio_stat,omitempty"`
+	PortStats  map[string]StreamedPortStat       `json:"port_stat,omitempty"`
+	LldpStat   StreamedLldpStat                  `json:"lldp_stat,omitempty"`
+	RxBytes    int                               `json:"rx_bytes,omitempty"`
+	RxPkts     int                               `json:"rx_pkts,omitempty"`
+	TxBytes    int                               `json:"tx_bytes,omitempty"`
+	TxPkts     int                               `json:"tx_pkts,omitempty"`
+	TxBps      int                               `json:"tx_bps,omitempty"`
+	RxBps      int                               `json:"rx_bps,omitempty"`
+	CpuStat    StreamedCpuStat                   `json:"cpu_stat,omitempty"`
+	MemStat    StreamedMemStat                   `json:"memory_stat,omitempty"`
+}
+
+// StreamedIPStat holds the IP addressing information of a device returned by the websockets streaming stats API
+type StreamedIPStat struct {
+	IP       netip.Addr        `json:"ip,omitempty"`
+	Netmask  netip.Addr        `json:"netmask,omitempty"`
+	Gateway  netip.Addr        `json:"gateway,omitempty"`
+	IP6      netip.Addr        `json:"ip6,omitempty"`
+	Netmask6 string            `json:"netmask6,omitempty"`
+	Gateway6 netip.Addr        `json:"gateway6,omitempty"`
+	DNS      []string          `json:"dns,omitempty"`
+	IPs      map[string]string `json:"ips,omitempty"`
+}
+
+// StreamedRadioStat holds the radio statistics of a device returned by the websockets streaming stats API
+type StreamedRadioStat struct {
+	Bandwidth  int    `json:"bandwidth,omitempty"`
+	Channel    int    `json:"channel,omitempty"`
+	Mac        string `json:"mac,omitempty"`
+	NumClients int    `json:"num_clients,omitempty"`
+	Power      int    `json:"power,omitempty"`
+	RxBytes    int    `json:"rx_bytes,omitempty"`
+	RxPkts     int    `json:"rx_pkts,omitempty"`
+	TxBytes    int    `json:"tx_bytes,omitempty"`
+	TxPkts     int    `json:"tx_pkts,omitempty"`
+}
+
+// StreamedPortStat holds the wired port statistics of a device returned by the websockets streaming stats API
+type StreamedPortStat struct {
+	TxPkts     int  `json:"tx_pkts,omitempty"`
+	TxBytes    int  `json:"tx_bytes,omitempty"`
+	RxPkts     int  `json:"rx_pkts,omitempty"`
+	RxBytes    int  `json:"rx_bytes,omitempty"`
+	RxPeakBps  int  `json:"rx_peak_bps,omitempty"`
+	TxPeakBps  int  `json:"tx_peak_bps,omitempty"`
+	FullDuplex bool `json:"full_duplex,omitempty"`
+	Speed      int  `json:"speed,omitempty"`
+	Up         bool `json:"up"`
+	RxErrors   int  `json:"rx_errors,omitempty"`
+}
+
+// StreamedLldpStat holds the LLDP information of a device returned by the websockets streaming stats API
+type StreamedLldpStat struct {
+	SystemName        string `json:"system_name,omitempty"`
+	SystemDesc        string `json:"system_desc,omitempty"`
+	MgmtAddr          string `json:"mgmt_addr,omitempty"`
+	LldpMedSupported  bool   `json:"lldp_med_supported,omitempty"`
+	PortDesc          string `json:"port_desc,omitempty"`
+	PortID            string `json:"port_id,omitempty"`
+	PowerRequestCount int    `json:"power_request_count,omitempty"`
+	PowerAllocated    int    `json:"power_allocated,omitempty"`
+	PowerDraw         int    `json:"power_draw,omitempty"`
+	PowerRequested    int    `json:"power_requested,omitempty"`
+}
+
+// StreamedCpuStat holds the CPU statistics of a device returned by the websockets streaming stats API
+type StreamedCpuStat struct {
+	System    int       `json:"system,omitempty"`
+	Idle      int       `json:"idle,omitempty"`
+	Interrupt int       `json:"interrupt,omitempty"`
+	User      int       `json:"user,omitempty"`
+	LoadAvg   []float32 `json:"load_avg,omitempty"`
+}
+
+// StreamedMemStat holds the memory statistics of a device returned by the websockets streaming stats API
+type StreamedMemStat struct {
+	Usage int `json:"usage,omitempty"`
+}
+
+// StreamedClientStat holds information about a client returned by the websockets streaming stats API
+type StreamedClientStat struct {
+	Client
 }

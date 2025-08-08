@@ -72,8 +72,8 @@ func (c *APIClient) GetSiteDeviceStats(siteID string) ([]DeviceStat, error) {
 }
 
 // StreamSiteDeviceStats opens a websocket connection and subscribes to the device statistics stream
-func (c *APIClient) StreamSiteDeviceStats(ctx context.Context, siteID string) (<-chan DeviceStat, error) {
-	return streamStats[DeviceStat](ctx, c, fmt.Sprintf("/sites/%s/stats/devices", siteID))
+func (c *APIClient) StreamSiteDeviceStats(ctx context.Context, siteID string) (<-chan StreamedDeviceStat, error) {
+	return streamStats[StreamedDeviceStat](ctx, c, fmt.Sprintf("/sites/%s/stats/devices", siteID))
 
 }
 
@@ -98,6 +98,6 @@ func (c *APIClient) GetSiteClientStats(siteID string) ([]Client, error) {
 }
 
 // StreamSiteClientStats opens a websocket connection and subscribes to the client statistics stream
-func (c *APIClient) StreamSiteClientStats(ctx context.Context, siteID string) (<-chan Client, error) {
-	return streamStats[Client](ctx, c, fmt.Sprintf("/sites/%s/stats/clients", siteID))
+func (c *APIClient) StreamSiteClientStats(ctx context.Context, siteID string) (<-chan StreamedClientStat, error) {
+	return streamStats[StreamedClientStat](ctx, c, fmt.Sprintf("/sites/%s/stats/clients", siteID))
 }

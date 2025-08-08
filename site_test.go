@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"strings"
 	"testing"
@@ -34,13 +35,23 @@ func TestGetSiteDevices(t *testing.T) {
 }
 
 func TestStreamSiteDeviceStats(t *testing.T) {
-	testDeviceStat := DeviceStat{
-		Device: Device{
-			ID:     "test-device-id",
-			Name:   "test-device",
-			SiteID: "test-site-id",
+	testDeviceStat := StreamedDeviceStat{
+		Mac:        "test-device-mac",
+		NumClients: 10,
+		RadioStats: map[RadioConfig]StreamedRadioStat{
+			Band5Config: {
+				Bandwidth: 40,
+			},
 		},
-		Status: Connected,
+		IPStat: StreamedIPStat{
+			IP:       netip.MustParseAddr("192.168.1.1"),
+			Netmask:  netip.MustParseAddr("255.255.255.0"),
+			Gateway:  netip.MustParseAddr("192.168.1.1"),
+			IP6:      netip.MustParseAddr("2001:db8::1"),
+			Netmask6: "/64",
+			Gateway6: netip.MustParseAddr("2001:db8::1"),
+			DNS:      []string{"8.8.8.8", "8.8.4.4"},
+		},
 	}
 	testData, err := json.Marshal(testDeviceStat)
 	if err != nil {
@@ -79,11 +90,14 @@ func TestStreamSiteDeviceStats(t *testing.T) {
 		if !ok {
 			t.Fatalf("APIClient.StreamSiteDeviceStats(%s): channel closed unexpectedly", siteID)
 		}
-		if stat.ID != testDeviceStat.ID {
-			t.Errorf("StreamSiteDeviceStats().ID: expected %q, got %q", testDeviceStat.ID, stat.ID)
+		if stat.Mac != testDeviceStat.Mac {
+			t.Errorf("StreamSiteDeviceStats().ID: expected %q, got %q", testDeviceStat.Mac, stat.Mac)
 		}
-		if stat.Status != testDeviceStat.Status {
-			t.Errorf("StreamSiteDeviceStats().Status: expected %q, got %q", testDeviceStat.Status, stat.Status)
+		if stat.NumClients != testDeviceStat.NumClients {
+			t.Errorf("StreamSiteDeviceStats().Status: expected %q, got %q", testDeviceStat.NumClients, stat.NumClients)
+		}
+		if stat.RadioStats[Band5Config].Bandwidth != testDeviceStat.RadioStats[Band5Config].Bandwidth {
+			t.Errorf("StreamSiteDeviceStats().RadioStats[Band5Config].Bandwidth: expected %q, got %q", testDeviceStat.RadioStats[Band5Config].Bandwidth, stat.RadioStats[Band5Config].Bandwidth)
 		}
 	case <-ctx.Done():
 		t.Fatal("APIClient.StreamSiteDeviceStats(): timed out waiting for stat")
