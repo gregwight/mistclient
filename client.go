@@ -71,6 +71,10 @@ type WebsocketMessage struct {
 
 // New returns an instance of the API client.
 func New(config *Config, logger *slog.Logger) (*APIClient, error) {
+	if config == nil {
+		return nil, fmt.Errorf("config cannot be nil")
+	}
+
 	baseURL, err := url.Parse(config.BaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse base URL: %w", err)
@@ -164,6 +168,8 @@ func (c *APIClient) Delete(u *url.URL) (*http.Response, error) {
 	return c.doRequest("DELETE", u, nil)
 }
 
+// GetWebsocketURL maps the base API URL into the appropriate websocket endpoint.
+// See https://www.juniper.net/documentation/us/en/software/mist/api/http/guides/websockets/hosts
 func (c *APIClient) GetWebsocketURL() (*url.URL, error) {
 	u := *c.baseURL
 
@@ -187,6 +193,7 @@ func (c *APIClient) GetWebsocketURL() (*url.URL, error) {
 	return &u, nil
 }
 
+// ConnectWebSocket opens a websocket connection to the appropriate websocket endpoint.
 func (c *APIClient) ConnectWebSocket() (*websocket.Conn, error) {
 	u, err := c.GetWebsocketURL()
 	if err != nil {
@@ -212,10 +219,10 @@ func (c *APIClient) ConnectWebSocket() (*websocket.Conn, error) {
 	return websocket.DialConfig(wsConfig)
 }
 
+// Subscribe sends a subscription request over a new websocket connection and returns a channel over which received messages will be sent.
 func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan WebsocketMessage, error) {
 	conn, err := c.ConnectWebSocket()
 	if err != nil {
-		conn.Close()
 		return nil, fmt.Errorf("failed to connect to websocket: %w", err)
 	}
 	c.logger.Debug("successfully connected to websocket", "url", conn.Config().Location.String())
@@ -266,7 +273,7 @@ func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan Webso
 				c.logger.Error("websocket receive error", "error", err)
 				return
 			}
-			c.logger.Debug("received websocket message", "channel", channel, "msg", fmt.Sprintf("%+v", msg))
+			c.logger.Debug("received websocket message", "channel", channel)
 			msgChan <- msg
 		}
 	}()
@@ -274,6 +281,7 @@ func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan Webso
 	return msgChan, nil
 }
 
+// Unsubscribe sends an unsubscribe request over an existing websocket connection.
 func (c *APIClient) Unsubscribe(conn *websocket.Conn, channel string) error {
 	if err := websocket.JSON.Send(conn, UnsubscribeRequest{Unsubscribe: channel}); err != nil {
 		return fmt.Errorf("failed to send websocket unsubscribe request: %w", err)
