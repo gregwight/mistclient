@@ -3,7 +3,7 @@
 // It has been written with an initial focus on observability, with the currently supported
 // endpoints chosen for integration with a Prometheus exporter to produce operational metrics.
 //
-// The client currently supports the following root endpount:
+// The client currently supports the following root endpoint:
 //   - /api/v1/self
 //
 // The client currently supports the following Organization endpoints:
@@ -208,7 +208,7 @@ func (c *APIClient) GetWebsocketURL() (*url.URL, error) {
 	}
 
 	if !strings.HasPrefix(u.Host, "api.") {
-		return nil, fmt.Errorf("unable to determin websocket endpoint address, base URL is not prefixed with 'api.': %s", u.Host)
+		return nil, fmt.Errorf("unable to determine websocket endpoint address, base URL is not prefixed with 'api.': %s", u.Host)
 	}
 
 	u.Host = strings.Replace(u.Host, "api.", "api-ws.", 1)

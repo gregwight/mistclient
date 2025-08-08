@@ -20,7 +20,7 @@ To maintain a clean and readable commit history that facilitates automatic chang
 
 Your commit messages should be structured as follows:
 
-```
+```text
 <type>[optional scope]: <description>
 
 [optional body]
