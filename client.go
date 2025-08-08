@@ -1,7 +1,10 @@
-// Package mistclient provides a client for interacting Juniper's MIST management API.
+// Package mistclient provides a client for interacting Juniper's MIST API.
 //
 // It has been written with an initial focus on observability, with the currently supported
 // endpoints chosen for integration with a Prometheus exporter to produce operational metrics.
+//
+// The client currently supports the following root endpoint:
+//   - /api/v1/self
 //
 // The client currently supports the following Organization endpoints:
 //   - /api/v1/orgs/:org_id/sites
@@ -9,6 +12,7 @@
 //   - /api/v1/orgs/:org_id/alarms/count
 //
 // The client currently supports the following Site endpoints:
+//   - /api/v1/sites/:site_id/stats
 //   - /api/v1/sites/:site_id/devices
 //   - /api/v1/sites/:site_id/stats/devices
 //   - /api/v1/sites/:site_id/stats/clients
@@ -31,6 +35,42 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+// LevelTrace is a custom log level for verbose, trace-level logging, for example, to log API request and response bodies.
+const LevelTrace = slog.Level(-8)
+
+// LevelNames is a map of custom log levels to their string representation.
+var LevelNames = map[slog.Level]string{
+	LevelTrace: "TRACE",
+}
+
+// NewTraceHandlerOptions is a constructor for generating a handler options with TRACE logging enabled.
+func NewTraceHandlerOptions() *slog.HandlerOptions {
+	return &slog.HandlerOptions{
+		Level:     LevelTrace,
+		AddSource: true,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.LevelKey {
+				if level, ok := a.Value.Any().(slog.Level); ok {
+					if name, ok := LevelNames[level]; ok {
+						a.Value = slog.StringValue(name)
+					}
+				}
+			}
+			return a
+		},
+	}
+}
+
+// Logger is a wrapper around slog.Logger to provide custom logging methods.
+type Logger struct {
+	*slog.Logger
+}
+
+// Trace logs at the custom TRACE level.
+func (l *Logger) Trace(msg string, args ...any) {
+	l.Log(context.Background(), LevelTrace, msg, args...)
+}
+
 // Config represents the API access parameters.
 type Config struct {
 	BaseURL string        `yaml:"base_url,omitempty"`
@@ -43,7 +83,7 @@ type APIClient struct {
 	baseURL *url.URL
 	apiKey  string
 	client  *http.Client
-	logger  *slog.Logger
+	logger  *Logger
 }
 
 // SubscriptionRequest represents a websocket subscription request
@@ -92,7 +132,7 @@ func New(config *Config, logger *slog.Logger) (*APIClient, error) {
 	return &APIClient{
 		baseURL: baseURL,
 		apiKey:  config.APIKey,
-		logger:  logger.With("module", "mistclient"),
+		logger:  &Logger{logger.With("module", "mistclient")},
 		client: &http.Client{
 			Timeout: timeout,
 		},
@@ -109,6 +149,7 @@ func (c *APIClient) doRequest(method string, u *url.URL, body interface{}) (*htt
 		if err != nil {
 			return nil, err
 		}
+		c.logger.Trace("api request body", "body", string(data))
 		reqBody = bytes.NewBuffer(data)
 	}
 
@@ -120,19 +161,19 @@ func (c *APIClient) doRequest(method string, u *url.URL, body interface{}) (*htt
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.apiKey))
 	req.Header.Set("Content-Type", "application/json")
 
-	c.logger.Debug("making API request", "method", method, "url", u.String())
+	c.logger.Trace("making API request", "method", method, "url", u.String())
 	resp, err := c.client.Do(req)
 	if err != nil {
 		c.logger.Error("request failed", "error", err)
 		return nil, err
 	}
-	c.logger.Debug("API response received", "status", resp.StatusCode)
+	c.logger.Trace("api response received", "status", resp.StatusCode)
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.logger.Debug("unable to read response body", "error", err)
-		return nil, err
+		return nil, fmt.Errorf("unable to read response body: %w", err)
 	}
+	c.logger.Trace("api response body", "body", string(respBody))
 	resp.Body = io.NopCloser(bytes.NewBuffer(respBody))
 
 	return resp, nil
@@ -184,7 +225,7 @@ func (c *APIClient) GetWebsocketURL() (*url.URL, error) {
 	}
 
 	if !strings.HasPrefix(u.Host, "api.") {
-		return nil, fmt.Errorf("unable to determin websocket endpoint address, base URL is not prefixed with 'api.': %s", u.Host)
+		return nil, fmt.Errorf("unable to determine websocket endpoint address, base URL is not prefixed with 'api.': %s", u.Host)
 	}
 
 	u.Host = strings.Replace(u.Host, "api.", "api-ws.", 1)
@@ -253,7 +294,7 @@ func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan Webso
 		<-ctx.Done()
 		err := c.Unsubscribe(conn, channel)
 		if err != nil {
-			c.logger.Error("failed to unsubscribe from websocket channel", "error", err, "channel", channel)
+			c.logger.Error("failed to unsubscribe from websocket channel", "channel", channel, "error", err)
 		}
 		conn.Close()
 	}()
@@ -267,13 +308,15 @@ func (c *APIClient) Subscribe(ctx context.Context, channel string) (<-chan Webso
 			var msg WebsocketMessage
 			err := websocket.JSON.Receive(conn, &msg)
 			if err != nil {
+				// If context is done, this is an expected error on connection close.
 				if ctx.Err() != nil {
+					c.logger.Debug("websocket connection closed", "channel", channel)
 					return
 				}
-				c.logger.Error("websocket receive error", "error", err)
+				c.logger.Error("websocket receive error", "channel", channel, "error", err)
 				return
 			}
-			c.logger.Debug("received websocket message", "channel", channel)
+			c.logger.Trace("websocket message received", "channel", msg.Channel, "data", msg.Data)
 			msgChan <- msg
 		}
 	}()
@@ -306,7 +349,7 @@ func streamStats[T any](ctx context.Context, c *APIClient, channel string) (<-ch
 		for msg := range msgChan {
 			var stat T
 			if err := json.Unmarshal([]byte(msg.Data), &stat); err != nil {
-				c.logger.Error("failed to unmarshal websocket message", "error", err, "channel", channel)
+				c.logger.Error("failed to unmarshal websocket message", "channel", channel, "error", err)
 				continue
 			}
 			statChan <- stat

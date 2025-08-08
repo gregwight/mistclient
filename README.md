@@ -35,73 +35,118 @@ Here's a simple example of how to create a client and list the sites in an organ
 package main
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"log/slog"
-	"os"
-	"time"
+    "context"
+    "fmt"
+    "log"
+    "log/slog"
+    "os"
+    "time"
 
-	"github.com/gregwight/mistclient"
+    "github.com/gregwight/mistclient"
 )
 
 func main() {
-	apiKey := os.Getenv("MIST_API_KEY")
-	if apiKey == "" {
-		log.Fatal("MIST_API_KEY environment variable not set")
-	}
-	orgID := os.Getenv("MIST_ORG_ID")
-	if orgID == "" {
-		log.Fatal("MIST_ORG_ID environment variable not set")
-	}
+    apiKey := os.Getenv("MIST_API_KEY")
+    if apiKey == "" {
+        log.Fatal("MIST_API_KEY environment variable not set")
+    }
+    orgID := os.Getenv("MIST_ORG_ID")
+    if orgID == "" {
+        log.Fatal("MIST_ORG_ID environment variable not set")
+    }
 
-	// Create a new client
-	client, err := mistclient.New(&mistclient.Config{
-		BaseURL: "https://api.mist.com", // Or your regional cloud, e.g., https://api.eu.mist.com
-		APIKey:  apiKey,
-	}, slog.Default())
-	if err != nil {
-		log.Fatalf("Error creating client: %v", err)
-	}
-	
-	// Get all sites for the organization
-	sites, err := client.GetOrgSites(orgID)
-	if err != nil {
-		log.Fatalf("Error getting sites: %v", err)
-	}
+    // Create a new client
+    client, err := mistclient.New(&mistclient.Config{
+        BaseURL: "https://api.mist.com", // Or your regional cloud, e.g., https://api.eu.mist.com
+        APIKey:  apiKey,
+    }, slog.Default())
+    if err != nil {
+        log.Fatalf("Error creating client: %v", err)
+    }
+    
+    // Get all sites for the organization
+    sites, err := client.GetOrgSites(orgID)
+    if err != nil {
+        log.Fatalf("Error getting sites: %v", err)
+    }
 
-	fmt.Printf("Found %d sites in organization %s:\n", len(sites), orgID)
-	for _, site := range sites {
-		fmt.Printf("- %s (ID: %s)\n", site.Name, site.ID)
-	}
+    fmt.Printf("Found %d sites in organization %s:\n", len(sites), orgID)
+    for _, site := range sites {
+        fmt.Printf("- %s (ID: %s)\n", site.Name, site.ID)
+    }
 
-	// Example: Streaming device statistics for a specific site
-	// For this to work, you must have at least one site. We'll use the first one found.
-	if len(sites) > 0 {
-		siteID := sites[0].ID
+    // Example: Streaming device statistics for a specific site
+    // For this to work, you must have at least one site. We'll use the first one found.
+    if len(sites) > 0 {
+        siteID := sites[0].ID
 
-		// Create a context that will be cancelled after 30 seconds
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
+        // Create a context that will be cancelled after 30 seconds
+        ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+        defer cancel()
 
-		fmt.Printf("\nStreaming device stats for site %s (%s) for 30 seconds...\n", sites[0].Name, siteID)
+        fmt.Printf("\nStreaming device stats for site %s (%s) for 30 seconds...\n", sites[0].Name, siteID)
 
-		// Start streaming device stats
-		statsChan, err := client.StreamSiteDeviceStats(ctx, siteID)
-		if err != nil {
-			log.Fatalf("Error starting device stats stream: %v", err)
-		}
+        // Start streaming device stats
+        statsChan, err := client.StreamSiteDeviceStats(ctx, siteID)
+        if err != nil {
+            log.Fatalf("Error starting device stats stream: %v", err)
+        }
 
-		// Process messages from the stream until the context is cancelled
-		for stat := range statsChan {
-			fmt.Printf("Received update for device %s (%s): Status=%s, Uptime=%s\n",
-				stat.Name, stat.Mac, stat.Status, time.Duration(stat.Uptime).String())
-		}
+        // Process messages from the stream until the context is cancelled
+        for stat := range statsChan {
+            fmt.Printf("Received update for device %s (%s): Status=%s, Uptime=%s\n",
+                stat.Name, stat.Mac, stat.Status, time.Duration(stat.Uptime).String())
+        }
 
-		fmt.Println("Stream finished.")
-	}
+        fmt.Println("Stream finished.")
+    }
 }
 ```
+
+### Configuring Logging
+
+The client uses the standard `log/slog` library. You can pass in your own configured `*slog.Logger` to the `New()` constructor.
+
+This package also includes a custom `TRACE` log level, which is more verbose than `DEBUG`. This level is used for logging sensitive or very detailed information, such as raw API request and response bodies, which can be useful for detailed troubleshooting.
+
+***WARNING:*** TRACE logs may include sensitive data (e.g., Authorization headers/tokens, device MACs, client identifiers). Enable TRACE only in secure environments, ensure logs are access-controlled, and consider redacting sensitive fields either in your logger (ReplaceAttr) or via client-side options if available.
+
+*NOTE: The handler options returned by `NewTraceHandlerOptions()` enable `AddSource`, causing the logger wrapper to preserve the original caller location.  Thus `file:line` point to the calling code (not the wrapper).*
+
+Here is an example of how to configure a logger to show these `TRACE` messages:
+
+```go
+package main
+
+import (
+    "log/slog"
+    "os"
+
+    "github.com/gregwight/mistclient"
+)
+
+func main() {
+    // Get a pointer to a slog.HandlerOptions with the TRACE level set.
+    optionsTrace := mistclient.NewTraceHandlerOptions()
+
+    // Create a logger ensuring this options pointer is passed to the handler.
+    logger := slog.New(slog.NewTextHandler(os.Stdout, optionsTrace))
+
+    // Pass the configured logger when creating a new client.
+    client, err := mistclient.New(&mistclient.Config{
+         BaseURL: "https://api.mist.com",
+         APIKey:  os.Getenv("MIST_API_KEY"),
+    }, logger)
+    if err != nil {
+        logger.Error("failed to create client", "err", err)
+        return
+    }
+
+    // Any calls made with this client will now produce TRACE logs.
+    if _, err := client.GetSelf(); err != nil {
+        logger.Error("GetSelf failed", "err", err)
+    }
+}
 
 ## Supported API Endpoints
 
