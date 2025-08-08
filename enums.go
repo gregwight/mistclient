@@ -87,13 +87,25 @@ func DeviceTypeFromString(dt string) DeviceType {
 	}
 }
 
-func (dt *DeviceType) UnmarshalJSON(data []byte) error {
+func (dt *DeviceType) unmarshal(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
 	*dt = DeviceTypeFromString(s)
 	return nil
+}
+
+func (dt *DeviceType) UnmarshalText(b []byte) error {
+	return dt.unmarshal(b)
+}
+
+func (dt *DeviceType) UnmarshalJSON(b []byte) error {
+	return dt.unmarshal(b)
+}
+
+func (dt DeviceType) MarshalText() ([]byte, error) {
+	return []byte(dt.String()), nil
 }
 
 func (dt DeviceType) MarshalJSON() ([]byte, error) {
@@ -141,13 +153,25 @@ func DeviceStatusFromString(ds string) DeviceStatus {
 	}
 }
 
-func (ds *DeviceStatus) UnmarshalJSON(data []byte) error {
+func (ds *DeviceStatus) unmarshal(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
 	*ds = DeviceStatusFromString(s)
 	return nil
+}
+
+func (ds *DeviceStatus) UnmarshalText(b []byte) error {
+	return ds.unmarshal(b)
+}
+
+func (ds *DeviceStatus) UnmarshalJSON(b []byte) error {
+	return ds.unmarshal(b)
+}
+
+func (ds DeviceStatus) MarshalText() ([]byte, error) {
+	return []byte(ds.String()), nil
 }
 
 func (ds DeviceStatus) MarshalJSON() ([]byte, error) {
@@ -207,6 +231,10 @@ func (r *Radio) UnmarshalJSON(b []byte) error {
 	return r.unmarshal(b)
 }
 
+func (r Radio) MarshalText() ([]byte, error) {
+	return []byte(r.String()), nil
+}
+
 func (r Radio) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.String())
 }
@@ -262,6 +290,10 @@ func (rc *RadioConfig) UnmarshalText(b []byte) error {
 
 func (rc *RadioConfig) UnmarshalJSON(b []byte) error {
 	return rc.unmarshal(b)
+}
+
+func (rc RadioConfig) MarshalText() ([]byte, error) {
+	return []byte(rc.String()), nil
 }
 
 func (rc RadioConfig) MarshalJSON() ([]byte, error) {
@@ -334,6 +366,10 @@ func (dp *Dot11Proto) UnmarshalText(b []byte) error {
 
 func (dp *Dot11Proto) UnmarshalJSON(b []byte) error {
 	return dp.unmarshal(b)
+}
+
+func (dp Dot11Proto) MarshalText() ([]byte, error) {
+	return []byte(dp.String()), nil
 }
 
 func (dp Dot11Proto) MarshalJSON() ([]byte, error) {

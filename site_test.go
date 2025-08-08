@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"strings"
 	"testing"
@@ -41,6 +42,15 @@ func TestStreamSiteDeviceStats(t *testing.T) {
 			Band5Config: {
 				Bandwidth: 40,
 			},
+		},
+		IPStat: StreamedIPStat{
+			IP:       netip.MustParseAddr("192.168.1.1"),
+			Netmask:  netip.MustParseAddr("255.255.255.0"),
+			Gateway:  netip.MustParseAddr("192.168.1.1"),
+			IP6:      netip.MustParseAddr("2001:db8::1"),
+			Netmask6: "/64",
+			Gateway6: netip.MustParseAddr("2001:db8::1"),
+			DNS:      []string{"8.8.8.8", "8.8.4.4"},
 		},
 	}
 	testData, err := json.Marshal(testDeviceStat)

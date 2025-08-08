@@ -35,6 +35,16 @@ type UnixTime struct {
 	time.Time
 }
 
+// MarshalJSON implements the [json.Marshaler] interface.
+func (ut UnixTime) MarshalJSON() ([]byte, error) {
+	s := ut.Time.Unix()
+	b, err := json.Marshal(s)
+	if err != nil {
+		return nil, errors.New("UnixTime.MarshalJSON: " + err.Error())
+	}
+	return b, nil
+}
+
 func (ut *UnixTime) UnmarshalJSON(b []byte) error {
 	var dirtyTimestamp float32
 	if err := json.Unmarshal(b, &dirtyTimestamp); err != nil {
@@ -338,7 +348,7 @@ type StreamedDeviceStat struct {
 // StreamedIPStat holds the IP addressing information of a device returned by the websockets streaming stats API
 type StreamedIPStat struct {
 	IP       netip.Addr        `json:"ip,omitempty"`
-	Netmask  string            `json:"netmask,omitempty"`
+	Netmask  netip.Addr        `json:"netmask,omitempty"`
 	Gateway  netip.Addr        `json:"gateway,omitempty"`
 	IP6      netip.Addr        `json:"ip6,omitempty"`
 	Netmask6 string            `json:"netmask6,omitempty"`
