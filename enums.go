@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// TicketStatus defines the possible values for support ticket status.
 type TicketStatus int
 
 const (
@@ -32,6 +33,7 @@ func (ts TicketStatus) String() string {
 	}
 }
 
+// TicketStatusFromString creates a TicketStatus from the associated string representation.
 func TicketStatusFromString(status string) TicketStatus {
 	switch status {
 	case "open":
@@ -49,6 +51,7 @@ func TicketStatusFromString(status string) TicketStatus {
 	}
 }
 
+// DeviceType defines the possible values fo a device types.
 type DeviceType int
 
 const (
@@ -70,6 +73,7 @@ func (dt DeviceType) String() string {
 	}
 }
 
+// DeviceTypeFromString creates a DeviceType from the associated string representation.
 func DeviceTypeFromString(dt string) DeviceType {
 	switch dt {
 	case "ap":
@@ -96,6 +100,7 @@ func (dt DeviceType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(dt.String())
 }
 
+// DeviceStatus defines the possible values for a device status.
 type DeviceStatus int
 
 const (
@@ -120,6 +125,7 @@ func (ds DeviceStatus) String() string {
 	}
 }
 
+// DeviceStatusFromString creates a DeviceStatus from the associated string representation.
 func DeviceStatusFromString(ds string) DeviceStatus {
 	switch ds {
 	case "connected":
@@ -148,6 +154,7 @@ func (ds DeviceStatus) MarshalJSON() ([]byte, error) {
 	return json.Marshal(ds.String())
 }
 
+// Radio defines the possible values for a radio band.
 type Radio int
 
 const (
@@ -169,6 +176,7 @@ func (r Radio) String() string {
 	}
 }
 
+// RadioFromString creates a Radio from the associated string representation.
 func RadioFromString(r string) Radio {
 	switch r {
 	case "6":
@@ -203,6 +211,7 @@ func (r Radio) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.String())
 }
 
+// RadioConfig defines the possible values for a radio band configuration.
 type RadioConfig int
 
 const (
@@ -224,6 +233,7 @@ func (rc RadioConfig) String() string {
 	}
 }
 
+// RadioConfigFromString creates a RadioConfig from the associated string representation.
 func RadioConfigFromString(r string) RadioConfig {
 	switch r {
 	case "band_6":
@@ -258,6 +268,7 @@ func (rc RadioConfig) MarshalJSON() ([]byte, error) {
 	return json.Marshal(rc.String())
 }
 
+// Dot11Proto defines the possible values for the dot11 protocol
 type Dot11Proto int
 
 const (
@@ -288,6 +299,7 @@ func (dp Dot11Proto) String() string {
 	}
 }
 
+// Dot11ProtoFromString creates a Dot11Proto from the associated string representation.
 func Dot11ProtoFromString(dp string) Dot11Proto {
 	switch dp {
 	case "a":

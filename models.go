@@ -111,6 +111,7 @@ type Site struct {
 	SecPolicyID       string             `json:"secpolicy_id,omitempty"`
 }
 
+// Org represents an organization
 type Org struct {
 	ID              string   `json:"id,omitempty"`
 	Name            string   `json:"name,omitempty"`
