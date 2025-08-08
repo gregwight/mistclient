@@ -111,6 +111,7 @@ This package also includes a custom `TRACE` log level, which is more verbose tha
 
 ***WARNING:*** TRACE logs may include sensitive data (e.g., Authorization headers/tokens, device MACs, client identifiers). Enable TRACE only in secure environments, ensure logs are access-controlled, and consider redacting sensitive fields either in your logger (ReplaceAttr) or via client-side options if available.
 
+*NOTE: The handler options returned by `NewTraceHandlerOptions()` enable `AddSource`, causing the logger wrapper to preserve the original caller location.  Thus `file:line` point to the calling code (not the wrapper).*
 
 Here is an example of how to configure a logger to show these `TRACE` messages:
 
@@ -125,11 +126,11 @@ import (
 )
 
 func main() {
-	// Get a pointer to a slog.HandlerOptions with the TRACE level set.
-	optionsTrace := mistclient.NewTraceHandlerOptions()
+    // Get a pointer to a slog.HandlerOptions with the TRACE level set.
+    optionsTrace := mistclient.NewTraceHandlerOptions()
 
-	// Create a logger ensuring this options pointer is passed to the handler.
-	logger := slog.New(slog.NewTextHandler(os.Stdout, optionsTrace))
+    // Create a logger ensuring this options pointer is passed to the handler.
+    logger := slog.New(slog.NewTextHandler(os.Stdout, optionsTrace))
 
     // Pass the configured logger when creating a new client.
     client, err := mistclient.New(&mistclient.Config{
