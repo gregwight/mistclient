@@ -37,7 +37,7 @@ type UnixTime struct {
 
 // MarshalJSON implements the [json.Marshaler] interface.
 func (ut UnixTime) MarshalJSON() ([]byte, error) {
-	s := ut.Time.Unix()
+	s := ut.Unix()
 	b, err := json.Marshal(s)
 	if err != nil {
 		return nil, errors.New("UnixTime.MarshalJSON: " + err.Error())
