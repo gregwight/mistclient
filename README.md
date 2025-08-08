@@ -125,28 +125,13 @@ import (
 )
 
 func main() {
-    // 1. Set the desired log level. To see the most verbose logs, use LevelTrace.
-    logLevel := mistclient.LevelTrace
+	// Get a pointer to a slog.HandlerOptions with the TRACE level set.
+	optionsTrace := mistclient.NewTraceHandlerOptions()
 
-    // 2. Create a slog handler that can display the custom "TRACE" level name.
-    handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-        Level: logLevel,
-		AddSource: true,
-        ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-            if a.Key == slog.LevelKey {
-                if level, ok := a.Value.Any().(slog.Level); ok {
-                    if name, ok := mistclient.LevelNames[level]; ok {
-                        a.Value = slog.StringValue(name)
-                    }
-                }
-            }
-            return a
-        },
-    })
+	// Create a logger ensuring this options pointer is passed to the handler.
+	logger := slog.New(slog.NewTextHandler(os.Stdout, optionsTrace))
 
-    logger := slog.New(handler)
-
-    // 3. Pass the configured logger when creating a new client.
+    // Pass the configured logger when creating a new client.
     client, err := mistclient.New(&mistclient.Config{
          BaseURL: "https://api.mist.com",
          APIKey:  os.Getenv("MIST_API_KEY"),

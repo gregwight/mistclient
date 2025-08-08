@@ -39,9 +39,26 @@ import (
 const LevelTrace = slog.Level(-8)
 
 // LevelNames is a map of custom log levels to their string representation.
-// It can be used with slog.HandlerOptions.ReplaceAttr to display custom level names.
 var LevelNames = map[slog.Level]string{
 	LevelTrace: "TRACE",
+}
+
+// NewTraceHandlerOptions is a constructor for generating a handler options with TRACE logging enabled.
+func NewTraceHandlerOptions() *slog.HandlerOptions {
+	return &slog.HandlerOptions{
+		Level:     LevelTrace,
+		AddSource: true,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.LevelKey {
+				if level, ok := a.Value.Any().(slog.Level); ok {
+					if name, ok := LevelNames[level]; ok {
+						a.Value = slog.StringValue(name)
+					}
+				}
+			}
+			return a
+		},
+	}
 }
 
 // Logger is a wrapper around slog.Logger to provide custom logging methods.
