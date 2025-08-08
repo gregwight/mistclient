@@ -103,6 +103,55 @@ func main() {
 }
 ```
 
+### Configuring Logging
+
+The client uses the standard `log/slog` library. You can pass in your own configured `*slog.Logger` to the `New()` constructor.
+
+This package also includes a custom `TRACE` log level, which is more verbose than `DEBUG`. This level is used for logging sensitive or very detailed information, such as raw API request and response bodies, which can be useful for deep troubleshooting.
+
+Here is an example of how to configure a logger to show these `TRACE` messages:
+
+```go
+package main
+
+import (
+	"log/slog"
+	"os"
+
+	"github.com/gregwight/mistclient"
+)
+
+func main() {
+	// 1. Set the desired log level. To see the most verbose logs, use LevelTrace.
+	logLevel := mistclient.LevelTrace
+
+	// 2. Create a slog handler that can display the custom "TRACE" level name.
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevel,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.LevelKey {
+				if level, ok := a.Value.Any().(slog.Level); ok {
+					if name, ok := mistclient.LevelNames[level]; ok {
+						a.Value = slog.StringValue(name)
+					}
+				}
+			}
+			return a
+		},
+	})
+
+	logger := slog.New(handler)
+
+	// 3. Pass the configured logger when creating a new client.
+	client, _ := mistclient.New(&mistclient.Config{
+		BaseURL: "https://api.mist.com",
+		APIKey:  os.Getenv("MIST_API_KEY"),
+	}, logger)
+
+	// Any calls made with this client will now produce TRACE logs.
+	_, _ = client.GetSelf()
+}
+
 ## Supported API Endpoints
 
 The client is organized by Mist API resources (e.g., Self, Organization, Site).
