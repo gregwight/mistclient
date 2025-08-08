@@ -401,3 +401,8 @@ type StreamedCpuStat struct {
 type StreamedMemStat struct {
 	Usage int `json:"usage,omitempty"`
 }
+
+// StreamedClientStat holds information about a client returned by the websockets streaming stats API
+type StreamedClientStat struct {
+	Client
+}

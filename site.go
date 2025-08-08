@@ -98,6 +98,6 @@ func (c *APIClient) GetSiteClientStats(siteID string) ([]Client, error) {
 }
 
 // StreamSiteClientStats opens a websocket connection and subscribes to the client statistics stream
-func (c *APIClient) StreamSiteClientStats(ctx context.Context, siteID string) (<-chan Client, error) {
-	return streamStats[Client](ctx, c, fmt.Sprintf("/sites/%s/stats/clients", siteID))
+func (c *APIClient) StreamSiteClientStats(ctx context.Context, siteID string) (<-chan StreamedClientStat, error) {
+	return streamStats[StreamedClientStat](ctx, c, fmt.Sprintf("/sites/%s/stats/clients", siteID))
 }
