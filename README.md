@@ -107,7 +107,10 @@ func main() {
 
 The client uses the standard `log/slog` library. You can pass in your own configured `*slog.Logger` to the `New()` constructor.
 
-This package also includes a custom `TRACE` log level, which is more verbose than `DEBUG`. This level is used for logging sensitive or very detailed information, such as raw API request and response bodies, which can be useful for deep troubleshooting.
+This package also includes a custom `TRACE` log level, which is more verbose than `DEBUG`. This level is used for logging sensitive or very detailed information, such as raw API request and response bodies, which can be useful for detailed troubleshooting.
+
+***WARNING:*** TRACE logs may include sensitive data (e.g., Authorization headers/tokens, device MACs, client identifiers). Enable TRACE only in secure environments, ensure logs are access-controlled, and consider redacting sensitive fields either in your logger (ReplaceAttr) or via client-side options if available.
+
 
 Here is an example of how to configure a logger to show these `TRACE` messages:
 
@@ -128,6 +131,7 @@ func main() {
     // 2. Create a slog handler that can display the custom "TRACE" level name.
     handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
         Level: logLevel,
+		AddSource: true,
         ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
             if a.Key == slog.LevelKey {
                 if level, ok := a.Value.Any().(slog.Level); ok {
@@ -143,13 +147,19 @@ func main() {
     logger := slog.New(handler)
 
     // 3. Pass the configured logger when creating a new client.
-    client, _ := mistclient.New(&mistclient.Config{
-        BaseURL: "https://api.mist.com",
-        APIKey:  os.Getenv("MIST_API_KEY"),
+    client, err := mistclient.New(&mistclient.Config{
+         BaseURL: "https://api.mist.com",
+         APIKey:  os.Getenv("MIST_API_KEY"),
     }, logger)
+    if err != nil {
+        logger.Error("failed to create client", "err", err)
+        return
+    }
 
     // Any calls made with this client will now produce TRACE logs.
-    _, _ = client.GetSelf()
+    if _, err := client.GetSelf(); err != nil {
+        logger.Error("GetSelf failed", "err", err)
+    }
 }
 
 ## Supported API Endpoints
