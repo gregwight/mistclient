@@ -328,7 +328,7 @@ type StreamedDeviceStat struct {
 	IP         string                            `json:"ip,omitempty"`
 	ExtIP      string                            `json:"ext_ip,omitempty"`
 	PowerSrc   string                            `json:"power_src,omitempty"`
-	Uptime     int                               `json:"uptime,omitempty"`
+	Uptime     Seconds                           `json:"uptime,omitempty"`
 	LastSeen   UnixTime                          `json:"last_seen,omitempty"`
 	NumClients int                               `json:"num_clients,omitempty"`
 	IPStat     StreamedIPStat                    `json:"ip_stat,omitempty"`
