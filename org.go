@@ -99,3 +99,32 @@ func (c *APIClient) CountOrgAlarms(orgID string) (map[string]int, error) {
 	}
 	return counts, nil
 }
+
+// ListOrgDevices returns a map of device MAC addresses to names.
+func (c *APIClient) ListOrgDevices(orgID string) (map[string]string, error) {
+	resp, err := c.Get(c.baseURL.JoinPath(fmt.Sprintf("/api/v1/orgs/%s/devices", orgID)))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, extractError(resp)
+	}
+
+	// Decode array of device objects, then build the map
+	var list []struct {
+		Mac  string `json:"mac"`
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
+		return nil, err
+	}
+
+	devices := make(map[string]string, len(list))
+	for _, d := range list {
+		devices[d.Mac] = d.Name
+	}
+
+	return devices, nil
+}

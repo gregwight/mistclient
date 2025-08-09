@@ -10,10 +10,15 @@ import (
 // Seconds represents a time in seconds
 type Seconds time.Duration
 
+func (s Seconds) Seconds() float64 {
+	d := (time.Duration)(s)
+	return d.Seconds()
+}
+
 // MarshalJSON implements the [json.Marshaler] interface.
 func (s Seconds) MarshalJSON() ([]byte, error) {
 	d := (time.Duration)(s)
-	b, err := json.Marshal(d)
+	b, err := json.Marshal(d.Seconds())
 	if err != nil {
 		return nil, errors.New("Seconds.MarshalJSON: " + err.Error())
 	}
@@ -22,11 +27,11 @@ func (s Seconds) MarshalJSON() ([]byte, error) {
 
 func (s *Seconds) UnmarshalJSON(b []byte) error {
 	// The Mist API returns this value as a float for some unknown reason...
-	var seconds float32
+	var seconds float64
 	if err := json.Unmarshal(b, &seconds); err != nil {
 		return err
 	}
-	*s = Seconds(time.Duration(int(seconds)) * time.Second)
+	*s = Seconds(time.Duration(seconds * float64(time.Second)))
 	return nil
 }
 
@@ -328,7 +333,7 @@ type StreamedDeviceStat struct {
 	IP         string                            `json:"ip,omitempty"`
 	ExtIP      string                            `json:"ext_ip,omitempty"`
 	PowerSrc   string                            `json:"power_src,omitempty"`
-	Uptime     int                               `json:"uptime,omitempty"`
+	Uptime     Seconds                           `json:"uptime,omitempty"`
 	LastSeen   UnixTime                          `json:"last_seen,omitempty"`
 	NumClients int                               `json:"num_clients,omitempty"`
 	IPStat     StreamedIPStat                    `json:"ip_stat,omitempty"`
