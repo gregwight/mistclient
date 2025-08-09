@@ -112,9 +112,18 @@ func (c *APIClient) ListOrgDevices(orgID string) (map[string]string, error) {
 		return nil, extractError(resp)
 	}
 
-	devices := make(map[string]string)
-	if err := json.NewDecoder(resp.Body).Decode(&devices); err != nil {
+	// Decode array of device objects, then build the map
+	var list []struct {
+		Mac  string `json:"mac"`
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
 		return nil, err
+	}
+
+	devices := make(map[string]string, len(list))
+	for _, d := range list {
+		devices[d.Mac] = d.Name
 	}
 
 	return devices, nil

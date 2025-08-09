@@ -18,7 +18,7 @@ func (s Seconds) Seconds() float64 {
 // MarshalJSON implements the [json.Marshaler] interface.
 func (s Seconds) MarshalJSON() ([]byte, error) {
 	d := (time.Duration)(s)
-	b, err := json.Marshal(d)
+	b, err := json.Marshal(d.Seconds())
 	if err != nil {
 		return nil, errors.New("Seconds.MarshalJSON: " + err.Error())
 	}
@@ -27,11 +27,11 @@ func (s Seconds) MarshalJSON() ([]byte, error) {
 
 func (s *Seconds) UnmarshalJSON(b []byte) error {
 	// The Mist API returns this value as a float for some unknown reason...
-	var seconds float32
+	var seconds float64
 	if err := json.Unmarshal(b, &seconds); err != nil {
 		return err
 	}
-	*s = Seconds(time.Duration(int(seconds)) * time.Second)
+	*s = Seconds(time.Duration(seconds * float64(time.Second)))
 	return nil
 }
 
