@@ -10,6 +10,11 @@ import (
 // Seconds represents a time in seconds
 type Seconds time.Duration
 
+func (s Seconds) Seconds() float64 {
+	d := (time.Duration)(s)
+	return d.Seconds()
+}
+
 // MarshalJSON implements the [json.Marshaler] interface.
 func (s Seconds) MarshalJSON() ([]byte, error) {
 	d := (time.Duration)(s)
